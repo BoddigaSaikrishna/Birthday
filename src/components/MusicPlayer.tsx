@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useImperativeHandle, forwardRef } from "re
 
 export interface MusicPlayerRef {
   play: () => void;
+  pause: () => void;
   switchTo: (url: string) => void;
 }
 
@@ -18,12 +19,18 @@ const MusicPlayer = forwardRef<MusicPlayerRef>((_props, ref) => {
     };
   }, []);
 
-  // Expose play() and switchTo() to parent
+  // Expose play(), pause(), and switchTo() to parent
   useImperativeHandle(ref, () => ({
     play: () => {
       if (audioRef.current && !playing) {
         audioRef.current.play().catch(() => {});
         setPlaying(true);
+      }
+    },
+    pause: () => {
+      if (audioRef.current && playing) {
+        audioRef.current.pause();
+        setPlaying(false);
       }
     },
     switchTo: (url: string) => {
@@ -45,10 +52,14 @@ const MusicPlayer = forwardRef<MusicPlayerRef>((_props, ref) => {
           newAudio.play().catch(() => {});
           audioRef.current = newAudio;
 
+          // Target volumes — Tum Hi Ho is background (0.35), others are emotional peaks (0.8)
+          const targetVolume = url.includes("Tum") ? 0.35 : 0.8;
+          
           const fadeIn = setInterval(() => {
-            if (newAudio.volume < 0.32) {
-              newAudio.volume = Math.min(0.35, newAudio.volume + 0.03);
+            if (newAudio.volume < targetVolume - 0.03) {
+              newAudio.volume = Math.min(targetVolume, newAudio.volume + 0.03);
             } else {
+              newAudio.volume = targetVolume;
               clearInterval(fadeIn);
             }
           }, 80);

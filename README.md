@@ -1,3 +1,3 @@
-# Welcome to your Lovable project
+# Birthday Wish Project
 
 TODO: Document your project here

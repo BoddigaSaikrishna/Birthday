@@ -7,6 +7,7 @@ import MusicPlayer, { type MusicPlayerRef } from "@/components/MusicPlayer";
 import SplashScreen from "@/components/SplashScreen";
 import EnvelopeButton from "@/components/EnvelopeButton";
 import Cake from "@/components/Cake";
+import PetalRain from "@/components/PetalRain";
 import { Button } from "@/components/ui/button";
 
 type Section =
@@ -60,8 +61,8 @@ const ProgressDots = ({ current }: { current: Section }) => {
               i < idx
                 ? "hsl(330 80% 65%)"
                 : i === idx
-                ? "linear-gradient(90deg, hsl(330 80% 65%), hsl(280 70% 65%))"
-                : "hsl(280 30% 30%)",
+                  ? "linear-gradient(90deg, hsl(330 80% 65%), hsl(280 70% 65%))"
+                  : "hsl(280 30% 30%)",
             boxShadow: i === idx ? "0 0 8px hsl(330 80% 65% / 0.7)" : "none",
             opacity: i > idx ? 0.4 : 1,
           }}
@@ -98,6 +99,7 @@ const Index = () => {
   const [response, setResponse] = useState<string | null>(null);
   const [sectionKey, setSectionKey] = useState(0);
   const [easterEgg, setEasterEgg] = useState(false);
+  const [isReelOpen, setIsReelOpen] = useState(false);
 
   const musicRef = useRef<MusicPlayerRef>(null);
 
@@ -122,6 +124,22 @@ const Index = () => {
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 6000);
     }
+    // Switch to Eye song during eye-contact section
+    if (next === "eye-contact") {
+      musicRef.current?.switchTo("/Music/Eye.mp3");
+    }
+    // Revert back to Tum Hi Ho when entering thinking section
+    if (next === "thinking") {
+      musicRef.current?.switchTo("/Music/Tum Hi Ho Aashiqui 2 128 Kbps.mp3");
+    }
+    // Switch to Krishna song when the deep confession starts
+    if (next === "confession") {
+      musicRef.current?.switchTo("/Music/Krishna.mp4");
+    }
+    // Revert back to Tum Hi Ho when leaving the confession section
+    if (next === "respectful") {
+      musicRef.current?.switchTo("/Music/Tum Hi Ho Aashiqui 2 128 Kbps.mp3");
+    }
   };
 
   const handleResponse = (answer: string) => {
@@ -136,6 +154,16 @@ const Index = () => {
         musicRef.current?.switchTo("/Music/Ottesi cheputhunna.mp4");
       }, 600);
     }
+  };
+
+  const openReel = () => {
+    musicRef.current?.pause();
+    setIsReelOpen(true);
+  };
+
+  const closeReel = () => {
+    setIsReelOpen(false);
+    musicRef.current?.play();
   };
 
   // #4 — Replay
@@ -262,20 +290,37 @@ const Index = () => {
             <SectionOrnament>👁️</SectionOrnament>
             <TypingText
               lines={[
-                "Sometimes it was just those small eye contacts…",
+                "When I look at you,",
+                "I don't notice anything else.",
+                "Not just your lovely face,",
+                "Your soft hair,",
+                "Your warm smile,",
+                "or your gentle hands.",
                 "",
-                "You probably didn't think much about them…",
-                "But for me, they meant something.",
-                "",
-                "Every time it happened…",
-                "it just made me feel really good.",
-                "",
-                "It's strange how something so small can stay with you.",
+                "It's your eyes that hold me.",
+                "They are so deep and beautiful",
+                "that I lose myself in them",
+                "Every single time. 🧿",
               ]}
               onComplete={handleTypingComplete}
               speed={42}
             />
-            {typingDone && <ContinueButton onClick={() => goTo("thinking")} />}
+            {typingDone && (
+              <div className="flex flex-col items-center gap-4 mt-6 animate-fade-in">
+                <Button
+                  onClick={openReel}
+                  className="bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-full px-8 py-6 text-lg font-medium backdrop-blur-sm transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)]"
+                >
+                  Watch this ✨
+                </Button>
+                <button
+                  onClick={() => goTo("thinking")}
+                  className="text-white/60 hover:text-white/90 text-sm mt-2 transition-colors"
+                >
+                  Continue reading...
+                </button>
+              </div>
+            )}
           </SectionWrapper>
         );
 
@@ -286,11 +331,13 @@ const Index = () => {
             <TypingText
               lines={[
                 "It might sound a bit unexpected…",
-                "",
                 "but those moments stayed with me.",
                 "",
-                "There wasn't really a day this year…",
-                "where you didn't cross my mind at least once.",
+                "If you asked me how many times",
+                "you came to my mind,",
+                "I would say only once...",
+                "",
+                "because you came and never left."
               ]}
               onComplete={handleTypingComplete}
               speed={42}
@@ -305,10 +352,14 @@ const Index = () => {
             <SectionOrnament>🙏</SectionOrnament>
             <TypingText
               lines={[
-                "I might not be someone you mention in your stories…",
+                "I read a quote once that said…",
                 "",
+                "\"When The One You Prayed For,",
+                "Becomes The One You Prayed With.\" ✨❤️",
+                "",
+                "I might not be someone you mention in your stories…",
                 "but in my own small way,",
-                "I've thought about you and wished good things for you",
+                "I've prayed for your happiness",
                 "more times than you'd probably expect.",
               ]}
               onComplete={handleTypingComplete}
@@ -349,10 +400,16 @@ const Index = () => {
             <TypingText
               lines={[
                 "So I'll just say it simply…",
-                "",
                 "I like you.",
+                "I love you more than any one love you.",
+                "Nv Oppukunte...",
                 "",
-                "More than just a friend.",
+                "Mahabharathamlo Krishna, Radha ni vadulukovadaniki enno karanalu undavacchu...",
+                "kani ee Krishna matram, ninnu vadulukovadaniki enni karanalu unna...",
+                "ninnu eppatiki vadaladu.",
+                "",
+                "Ayana loka-kalyanam kosam Radhani vadulukunnademo...",
+                "kani na kalyananiki (na jeevithaniki) matram nuvve mukhyam, Leela!",
               ]}
               onComplete={handleTypingComplete}
               speed={50}
@@ -513,6 +570,11 @@ const Index = () => {
     }
   };
 
+  // Determine if petal rain should be active
+  const activatePetals = [
+    "feeling", "confession", "respectful", "soft-ending", "final", "response"
+  ].includes(section);
+
   return (
     <>
       {/* #2 + #7 — Splash / Loading Screen */}
@@ -533,11 +595,41 @@ const Index = () => {
         <FloatingHearts />
         <Sparkles />
         <Confetti active={showConfetti} />
+        <PetalRain active={activatePetals} />
         <ProgressDots current={section} />
 
         <div className="relative z-10 flex items-center justify-center min-h-screen px-3 sm:px-4 py-16 sm:py-20">
           {renderSection()}
         </div>
+
+        {/* Video Reel Modal */}
+        {isReelOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="relative w-full max-w-[400px] aspect-[9/16] bg-black rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(255,90,150,0.15)] ring-1 ring-white/10 mx-4">
+              <button
+                onClick={closeReel}
+                className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 text-white/80 hover:text-white hover:bg-black/60 border border-white/10 backdrop-blur-md transition-all"
+                aria-label="Close video"
+              >
+                ✕
+              </button>
+              <video
+                ref={(el) => {
+                  if (el) {
+                    el.volume = 1.0;
+                    el.muted = false;
+                  }
+                }}
+                src="/Music/Reel.mp4"
+                className="w-full h-full object-cover"
+                autoPlay
+                controls
+                playsInline
+                onEnded={closeReel}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
