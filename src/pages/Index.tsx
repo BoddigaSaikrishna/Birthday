@@ -9,6 +9,7 @@ import EnvelopeButton from "@/components/EnvelopeButton";
 import Cake from "@/components/Cake";
 import PetalRain from "@/components/PetalRain";
 import { Button } from "@/components/ui/button";
+import ProposalScene from "@/components/ProposalScene";
 
 type Section =
   | "opening"
@@ -16,6 +17,7 @@ type Section =
   | "cake-cutting"
   | "honest-beginning"
   | "eye-contact"
+  | "smile"
   | "thinking"
   | "prayer"
   | "feeling"
@@ -35,6 +37,7 @@ const SECTIONS: Section[] = [
   "cake-cutting",
   "honest-beginning",
   "eye-contact",
+  "smile",
   "thinking",
   "prayer",
   "feeling",
@@ -128,17 +131,21 @@ const Index = () => {
     if (next === "eye-contact") {
       musicRef.current?.switchTo("/Music/Eye.mp3");
     }
-    // Revert back to Tum Hi Ho when entering thinking section
+    // Switch to Smile song for the smile section with automatic fade-in crossfade
+    if (next === "smile") {
+      musicRef.current?.switchTo("/Music/Smile.mp4");
+    }
+    // Switch to Urike Urike song after the smile section
     if (next === "thinking") {
-      musicRef.current?.switchTo("/Music/Tum Hi Ho Aashiqui 2 128 Kbps.mp3");
+      musicRef.current?.switchTo("/Music/Urike Urike (mp3cut.net).mp3");
     }
     // Switch to Krishna song when the deep confession starts
     if (next === "confession") {
       musicRef.current?.switchTo("/Music/Krishna.mp4");
     }
-    // Revert back to Tum Hi Ho when leaving the confession section
+    // Switch to Panchadhara Bomma after the Krishna confession section
     if (next === "respectful") {
-      musicRef.current?.switchTo("/Music/Tum Hi Ho Aashiqui 2 128 Kbps.mp3");
+      musicRef.current?.switchTo("/Music/Magadhera.mp3");
     }
   };
 
@@ -152,6 +159,11 @@ const Index = () => {
       // 🎵 Switch to Ottesi Cheputhunna when she says Yes
       setTimeout(() => {
         musicRef.current?.switchTo("/Music/Ottesi cheputhunna.mp4");
+      }, 600);
+    } else if (answer === "time") {
+      // 🎵 Switch to "I need time.mp3" when she says I need time
+      setTimeout(() => {
+        musicRef.current?.switchTo("/Music/I need time.mp3");
       }, 600);
     }
   };
@@ -172,6 +184,9 @@ const Index = () => {
     setTypingDone(false);
     setSection("opening");
     setSectionKey((k) => k + 1);
+    
+    // Reset music back to the starting song
+    musicRef.current?.switchTo("/Music/Tum Hi Ho Aashiqui 2 128 Kbps.mp3");
   };
 
   // Scroll to top on section change
@@ -294,7 +309,6 @@ const Index = () => {
                 "I don't notice anything else.",
                 "Not just your lovely face,",
                 "Your soft hair,",
-                "Your warm smile,",
                 "or your gentle hands.",
                 "",
                 "It's your eyes that hold me.",
@@ -314,13 +328,40 @@ const Index = () => {
                   Watch this ✨
                 </Button>
                 <button
-                  onClick={() => goTo("thinking")}
+                  onClick={() => goTo("smile")}
                   className="text-white/60 hover:text-white/90 text-sm mt-2 transition-colors"
                 >
                   Continue reading...
                 </button>
               </div>
             )}
+          </SectionWrapper>
+        );
+
+      case "smile":
+        return (
+          <SectionWrapper key={sectionKey}>
+            <SectionOrnament>😊</SectionOrnament>
+            <TypingText
+              lines={[
+                "Asalu aa navvu abbo…",
+                "aa navvu entee sami! 😍",
+                "",
+                "Mana Rayalaseema faction ni kuda",
+                "aapese power undi nee navvulo.",
+                "",
+                "Anta magic undi…",
+                "nuvvu prathi sari navvinappudu",
+                "nenu bayata silent ga untanu gani,",
+                "",
+                "na chitti gunde lopala chitukku mantadi telsa.. 💓",
+                "chudu eppudu kuda aa navvuu 🥰✨",
+              ]}
+              onComplete={handleTypingComplete}
+              speed={48}
+              lineDelay={900}
+            />
+            {typingDone && <ContinueButton onClick={() => goTo("thinking")} />}
           </SectionWrapper>
         );
 
@@ -395,8 +436,9 @@ const Index = () => {
 
       case "confession":
         return (
-          <SectionWrapper key={sectionKey}>
-            <SectionOrnament>💌</SectionOrnament>
+          <div className="relative w-full max-w-xl mx-auto flex items-center justify-center">
+            <SectionWrapper key={sectionKey}>
+              <SectionOrnament>💌</SectionOrnament>
             <TypingText
               lines={[
                 "So I'll just say it simply…",
@@ -424,7 +466,11 @@ const Index = () => {
               </p>
             )}
             {typingDone && <ContinueButton onClick={() => goTo("respectful")} />}
-          </SectionWrapper>
+            </SectionWrapper>
+            
+            {/* The animation positioned on the right side of the box */}
+            <ProposalScene className="absolute top-1/2 -translate-y-1/2 -right-[320px] md:-right-[420px] w-[240px] md:w-[350px] hidden lg:block" />
+          </div>
         );
 
       case "respectful":
@@ -516,10 +562,10 @@ const Index = () => {
                 </h2>
                 <div className="space-y-2">
                   <p className="text-base sm:text-lg md:text-xl text-foreground/80 font-light tracking-wide">
-                    I promise to always be honest with you,
+                    I promise you I will be honest with you everytime
                   </p>
                   <p className="text-base sm:text-lg md:text-xl text-foreground/80 font-light tracking-wide">
-                    and to make sure you never regret this ❤️
+                    and make sure you never regret this ❤️
                   </p>
                 </div>
                 <p

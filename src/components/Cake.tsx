@@ -9,6 +9,7 @@ const Cake = ({ onCut }: CakeProps) => {
   const [cutting, setCutting] = useState(false);
   const [cut, setCut] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
   const [sparkleParticles, setSparkleParticles] = useState<{ id: number; x: number; y: number; color: string }[]>([]);
 
   const candleColors = [
@@ -33,8 +34,15 @@ const Cake = ({ onCut }: CakeProps) => {
     setTimeout(() => setSparkleParticles([]), 1500);
   };
 
-  const handleCutCake = () => {
+  // Step 1: tapping the cake opens the popup
+  const handleTapCake = () => {
     if (!candleBlown || cutting || cut) return;
+    setShowPopup(true);
+  };
+
+  // Step 2: confirmed in popup → run the actual cut
+  const handleConfirmCut = () => {
+    setShowPopup(false);
     setCutting(true);
     setTimeout(() => {
       setCut(true);
@@ -349,7 +357,7 @@ const Cake = ({ onCut }: CakeProps) => {
         {/* Cut action overlay */}
         {candleBlown && !cut && (
           <button
-            onClick={handleCutCake}
+            onClick={handleTapCake}
             disabled={cutting}
             className="absolute inset-0 focus:outline-none"
             style={{
@@ -377,6 +385,57 @@ const Cake = ({ onCut }: CakeProps) => {
           </button>
         )}
       </div>
+
+      {/* ── Make-a-wish Popup ── */}
+      {showPopup && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center"
+          style={{ background: "hsl(0 0% 0% / 0.55)", backdropFilter: "blur(6px)" }}
+        >
+          <div
+            className="flex flex-col items-center gap-5 px-8 py-10 rounded-3xl text-center animate-fade-in-up"
+            style={{
+              background: "linear-gradient(135deg, hsl(330 50% 14% / 0.97), hsl(280 40% 10% / 0.97))",
+              border: "1px solid hsl(330 70% 55% / 0.3)",
+              boxShadow: "0 0 60px hsl(330 80% 60% / 0.2), 0 20px 60px hsl(0 0% 0% / 0.5)",
+              maxWidth: 340,
+              width: "90%",
+            }}
+          >
+            <p className="text-5xl" style={{ filter: "drop-shadow(0 0 14px hsl(45 100% 70%))" }}>🎂</p>
+            <h3
+              className="text-2xl sm:text-3xl font-display text-primary text-glow-pink leading-snug"
+              style={{ fontFamily: "var(--font-script, cursive)" }}
+            >
+              Make a Wish, Leela! 🌟
+            </h3>
+            <p className="text-sm text-foreground/60 font-light tracking-wide leading-relaxed">
+              Close your eyes, make a wish from your heart… then cut the cake! 💖
+            </p>
+            <div className="flex gap-3 mt-2">
+              <button
+                onClick={handleConfirmCut}
+                className="px-7 py-3 rounded-full text-sm uppercase tracking-[0.2em] font-medium transition-all duration-300 hover:scale-105 active:scale-95"
+                style={{
+                  background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(280 70% 55%))",
+                  color: "white",
+                  boxShadow: "0 4px 20px hsl(330 80% 65% / 0.5)",
+                  border: "1px solid hsl(330 80% 70% / 0.3)",
+                }}
+              >
+                Cut It! 🎂
+              </button>
+              <button
+                onClick={() => setShowPopup(false)}
+                className="px-5 py-3 rounded-full text-sm text-foreground/40 hover:text-foreground/70 transition-colors"
+                style={{ border: "1px solid hsl(280 30% 30% / 0.4)" }}
+              >
+                Wait…
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Cut message + continue button */}
       {showMessage && (

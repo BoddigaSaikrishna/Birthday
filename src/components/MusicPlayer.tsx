@@ -6,74 +6,122 @@ export interface MusicPlayerRef {
   switchTo: (url: string) => void;
 }
 
+// All songs preloaded at module level so they are buffered before any section starts
+const SONG_URLS = [
+  "/Music/Tum Hi Ho Aashiqui 2 128 Kbps.mp3",
+  "/Music/Eye.mp3",
+  "/Music/Urike Urike (mp3cut.net).mp3",
+  "/Music/Krishna.mp4",
+  "/Music/Ottesi cheputhunna.mp4",
+  "/Music/Magadhera.mp3",
+  "/Music/Smile.mp4",
+  "/Music/I need time.mp3",
+];
+
+// Create & preload every audio element immediately
+const audioPool: Record<string, HTMLAudioElement> = {};
+SONG_URLS.forEach((url) => {
+  const a = new Audio(url);
+  a.preload = "auto";
+  a.loop = true;
+  a.volume = 0;
+  audioPool[url] = a;
+});
+
+const DEFAULT_SONG = "/Music/Tum Hi Ho Aashiqui 2 128 Kbps.mp3";
+
 const MusicPlayer = forwardRef<MusicPlayerRef>((_props, ref) => {
   const [playing, setPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const currentUrlRef = useRef<string>(DEFAULT_SONG);
+
+  const getTargetVolume = (url: string) =>
+    url.includes("Tum") ? 0.35 : 0.8;
 
   useEffect(() => {
-    audioRef.current = new Audio("/Music/Tum Hi Ho Aashiqui 2 128 Kbps.mp3");
-    audioRef.current.loop = true;
-    audioRef.current.volume = 0.35;
+    // Set default song volume ready for play
+    audioPool[DEFAULT_SONG].volume = 0;
     return () => {
-      audioRef.current?.pause();
+      // Pause all on unmount
+      Object.values(audioPool).forEach((a) => a.pause());
     };
   }, []);
 
   // Expose play(), pause(), and switchTo() to parent
   useImperativeHandle(ref, () => ({
     play: () => {
-      if (audioRef.current && !playing) {
-        audioRef.current.play().catch(() => {});
-        setPlaying(true);
-      }
-    },
-    pause: () => {
-      if (audioRef.current && playing) {
-        audioRef.current.pause();
-        setPlaying(false);
-      }
-    },
-    switchTo: (url: string) => {
-      const old = audioRef.current;
-      if (!old) return;
-
-      // Fade out current song
-      const fadeOut = setInterval(() => {
-        if (old.volume > 0.03) {
-          old.volume = Math.max(0, old.volume - 0.03);
+      const current = audioPool[currentUrlRef.current];
+      if (!current) return;
+      const target = getTargetVolume(currentUrlRef.current);
+      current.play().catch(() => {});
+      // Fade in from 0
+      const fadeIn = setInterval(() => {
+        if (current.volume < target - 0.03) {
+          current.volume = Math.min(target, current.volume + 0.03);
         } else {
-          clearInterval(fadeOut);
-          old.pause();
-
-          // Start new song with fade-in
-          const newAudio = new Audio(url);
-          newAudio.loop = true;
-          newAudio.volume = 0;
-          newAudio.play().catch(() => {});
-          audioRef.current = newAudio;
-
-          // Target volumes — Tum Hi Ho is background (0.35), others are emotional peaks (0.8)
-          const targetVolume = url.includes("Tum") ? 0.35 : 0.8;
-          
-          const fadeIn = setInterval(() => {
-            if (newAudio.volume < targetVolume - 0.03) {
-              newAudio.volume = Math.min(targetVolume, newAudio.volume + 0.03);
-            } else {
-              newAudio.volume = targetVolume;
-              clearInterval(fadeIn);
-            }
-          }, 80);
+          current.volume = target;
+          clearInterval(fadeIn);
         }
       }, 80);
+      setPlaying(true);
+    },
+    pause: () => {
+      const current = audioPool[currentUrlRef.current];
+      if (!current) return;
+      current.pause();
+      setPlaying(false);
+    },
+    switchTo: (url: string) => {
+      const oldUrl = currentUrlRef.current;
+      const old = audioPool[oldUrl];
+      const newAudio = audioPool[url];
+      if (!old || !newAudio) return;
+
+      const targetVolume = getTargetVolume(url);
+
+      // Start new song immediately (already buffered) at volume 0
+      newAudio.currentTime = 0;
+      newAudio.volume = 0;
+      newAudio.play().catch(() => {});
+      currentUrlRef.current = url;
+
+      // Crossfade: fade out old & fade in new simultaneously
+      const crossfade = setInterval(() => {
+        let oldDone = false;
+        let newDone = false;
+
+        // Fade out old
+        if (old.volume > 0.03) {
+          old.volume = Math.max(0, old.volume - 0.05);
+        } else {
+          old.volume = 0;
+          old.pause();
+          oldDone = true;
+        }
+
+        // Fade in new
+        if (newAudio.volume < targetVolume - 0.05) {
+          newAudio.volume = Math.min(targetVolume, newAudio.volume + 0.05);
+        } else {
+          newAudio.volume = targetVolume;
+          newDone = true;
+        }
+
+        if (oldDone && newDone) {
+          clearInterval(crossfade);
+        }
+      }, 60);
+
+      setPlaying(true);
     },
   }));
 
   const toggle = () => {
-    if (!audioRef.current) return;
+    const current = audioPool[currentUrlRef.current];
+    if (!current) return;
     if (playing) {
-      audioRef.current.pause();
+      current.pause();
     } else {
-      audioRef.current.play().catch(() => {});
+      current.play().catch(() => {});
     }
     setPlaying(!playing);
   };

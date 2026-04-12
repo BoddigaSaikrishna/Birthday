@@ -7,7 +7,7 @@ const Sparkles = () => {
   const [stars, setStars] = useState<Star[]>([]);
   const [shooters, setShooters] = useState<ShootingStar[]>([]);
   const nextShooter = useRef(0);
-  
+
   // Interactive mouse trail
   const [mousePos, setMousePos] = useState({ x: -100, y: -100 });
   const [isInteractive, setIsInteractive] = useState(false);
@@ -42,14 +42,14 @@ const Sparkles = () => {
       setMousePos({ x: e.clientX, y: e.clientY });
       setIsInteractive(true);
     };
-    
+
     window.addEventListener("pointermove", handlePointerMove);
     return () => window.removeEventListener("pointermove", handlePointerMove);
   }, []);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      
+
       {/* Interactive Glowing Cursor Trail */}
       {isInteractive && (
         <div
