@@ -9,6 +9,7 @@ import EnvelopeButton from "@/components/EnvelopeButton";
 import Cake from "@/components/Cake";
 import PetalRain from "@/components/PetalRain";
 import { Button } from "@/components/ui/button";
+import { track } from "@vercel/analytics";
 import ProposalScene from "@/components/ProposalScene";
 
 type Section =
@@ -150,6 +151,8 @@ const Index = () => {
   };
 
   const handleResponse = (answer: string) => {
+    track("Response_Selected", { answer: answer }); // 📊 Log to Vercel Analytics
+    
     setResponse(answer);
     setSection("response");
     setSectionKey((k) => k + 1);
