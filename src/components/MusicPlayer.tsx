@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useImperativeHandle, forwardRef } from "re
 export interface MusicPlayerRef {
   play: () => void;
   pause: () => void;
+  fadeOut: () => void;
   switchTo: (url: string) => void;
 }
 
@@ -68,6 +69,20 @@ const MusicPlayer = forwardRef<MusicPlayerRef>((_props, ref) => {
       const current = audioPool[currentUrlRef.current];
       if (!current) return;
       current.pause();
+      setPlaying(false);
+    },
+    fadeOut: () => {
+      const current = audioPool[currentUrlRef.current];
+      if (!current) return;
+      const fade = setInterval(() => {
+        if (current.volume > 0.04) {
+          current.volume = Math.max(0, current.volume - 0.04);
+        } else {
+          current.volume = 0;
+          current.pause();
+          clearInterval(fade);
+        }
+      }, 60);
       setPlaying(false);
     },
     switchTo: (url: string) => {

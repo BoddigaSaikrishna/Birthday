@@ -22,11 +22,13 @@ type Section =
   | "thinking"
   | "prayer"
   | "feeling"
+  | "i-like-you"
   | "confession"
   | "respectful"
   | "soft-ending"
   | "final"
-  | "response";
+  | "response"
+  | "closing-note";
 
 const HER_NAME = "Leela";
 const HER_NICKNAME = "Leelu"; // ← used only on the final/response screens
@@ -42,6 +44,7 @@ const SECTIONS: Section[] = [
   "thinking",
   "prayer",
   "feeling",
+  "i-like-you",
   "confession",
   "respectful",
   "soft-ending",
@@ -140,7 +143,11 @@ const Index = () => {
     if (next === "thinking") {
       musicRef.current?.switchTo("/Music/Urike Urike (mp3cut.net).mp3");
     }
-    // Switch to Krishna song when the deep confession starts
+    // Fade out music when i-like-you starts — Propose.mp4 video audio takes over
+    if (next === "i-like-you") {
+      musicRef.current?.fadeOut();
+    }
+    // Switch to Krishna song when the deep confession starts, video audio ends
     if (next === "confession") {
       musicRef.current?.switchTo("/Music/Krishna.mp4");
     }
@@ -433,8 +440,84 @@ const Index = () => {
               onComplete={handleTypingComplete}
               speed={44}
             />
-            {typingDone && <ContinueButton onClick={() => goTo("confession")} />}
+            {typingDone && <ContinueButton onClick={() => goTo("i-like-you")} />}
           </SectionWrapper>
+        );
+
+      case "i-like-you":
+        return (
+          <>
+            {/* 🎬 Cinematic Propose.mp4 background — only for this section */}
+            <div className="fixed inset-0 pointer-events-none z-[1] animate-propose-fade-in">
+              <video
+                autoPlay
+                loop
+                playsInline
+                src="/Music/Propose.mp4"
+                className="absolute top-1/2 left-1/2"
+                style={{
+                  width: "100vh",
+                  height: "100vw",
+                  objectFit: "cover",
+                  filter: "brightness(0.5) saturate(1.3)",
+                  transform: "translate(-50%, -50%) rotate(-90deg)",
+                }}
+                ref={(el) => {
+                  if (el) {
+                    el.volume = 1.0;
+                    el.muted = false;
+                  }
+                }}
+              />
+              {/* Deep romantic overlay */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: [
+                    "radial-gradient(ellipse 80% 60% at 50% 50%, transparent 15%, hsl(280 60% 4% / 0.6) 100%)",
+                    "linear-gradient(to bottom, hsl(280 50% 4% / 0.65) 0%, transparent 25%, transparent 72%, hsl(280 50% 4% / 0.8) 100%)",
+                  ].join(", "),
+                }}
+              />
+              {/* Rose tint */}
+              <div
+                className="absolute inset-0"
+                style={{ background: "hsl(330 70% 25% / 0.10)", mixBlendMode: "screen" }}
+              />
+            </div>
+
+            {/* Content card — very transparent so video bleeds through */}
+            <div
+              key={sectionKey}
+              className="confession-glass-card relative z-10 max-w-xl w-full mx-auto text-center rounded-2xl sm:rounded-3xl px-5 py-12 sm:px-8 sm:py-16 md:px-12 md:py-20 section-enter"
+            >
+              <SectionOrnament>💗</SectionOrnament>
+              <TypingText
+                lines={[
+                  "There are things I've kept to myself for a long time…",
+                  "But today… I can't.",
+                  "",
+                  "So I'll just say it simply…",
+                  "I like you.",
+                  "I love you more than anyone.",
+                  "",
+                  "And I think you deserve to know that. ❤️",
+                ]}
+                onComplete={handleTypingComplete}
+                speed={52}
+                lineDelay={1100}
+              />
+              {typingDone && (
+                <p
+                  className="mt-8 text-5xl md:text-6xl heart-beat"
+                  style={{ filter: "drop-shadow(0 0 20px hsl(340 85% 65%))" }}
+                >
+                  💖
+                </p>
+              )}
+              {typingDone && <ContinueButton onClick={() => goTo("confession")} />}
+            </div>
+          </>
         );
 
       case "confession":
@@ -444,9 +527,6 @@ const Index = () => {
               <SectionOrnament>💌</SectionOrnament>
             <TypingText
               lines={[
-                "So I'll just say it simply…",
-                "I like you.",
-                "I love you more than any one love you.",
                 "Nv Oppukunte...",
                 "",
                 "Mahabharathamlo Krishna, Radha ni vadulukovadaniki enno karanalu undavacchu...",
@@ -578,11 +658,11 @@ const Index = () => {
                   Happy Birthday, my dear {HER_NICKNAME} 🎂💖
                 </p>
 
-                {/* #3 — "From" Signature */}
-                <Signature />
-
-                {/* #4 — Replay button */}
-                <ReplayButton onClick={handleReplay} />
+                <div className="mt-10 animate-fade-in-up">
+                  <Button variant="romantic" onClick={() => goTo("closing-note")}>
+                    One last thing... 💌
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="space-y-6 text-center">
@@ -607,10 +687,45 @@ const Index = () => {
                   Happy Birthday, {HER_NICKNAME} 🎂❤️
                 </p>
 
-                {/* #3 — "From" Signature */}
-                <Signature />
+                <div className="mt-10 animate-fade-in-up">
+                  <Button variant="romantic" onClick={() => goTo("closing-note")}>
+                    One last thing... 💌
+                  </Button>
+                </div>
+              </div>
+            )}
+          </SectionWrapper>
+        );
 
-                {/* #4 — Replay button */}
+      case "closing-note":
+        return (
+          <SectionWrapper key={sectionKey}>
+            <SectionOrnament>💌</SectionOrnament>
+            <TypingText
+              lines={[
+                "Neku nacchindani anukuntunnanu 🙂",
+                "",
+                "Idhi cheyadaniki koncham kastapadanu…",
+                "kani kastam anipinchina kuda, istam tho chesa.",
+                "",
+                "Ee roju kosam last 1 and half months nunchi wait chesthunna…",
+                "finally ee roju vacchesindhi.",
+                "",
+                "Manam koncham ekkuva matladithe…",
+                "leda daily koncham conversation unte…",
+                "maybe nenu gift ni inka different ga plan chesedani 🙂",
+                "",
+                "Kani ippudu naaku telisina best way lo chesa.",
+                "",
+                "Neku manchi experience ichaanani anukuntunnanu…",
+                "kani nee honest opinion chepthe chala happy avutanu ❤️",
+              ]}
+              onComplete={handleTypingComplete}
+              speed={42}
+            />
+            {typingDone && (
+              <div className="mt-8 flex flex-col items-center">
+                <Signature />
                 <ReplayButton onClick={handleReplay} />
               </div>
             )}
@@ -621,7 +736,7 @@ const Index = () => {
 
   // Determine if petal rain should be active
   const activatePetals = [
-    "feeling", "confession", "respectful", "soft-ending", "final", "response"
+    "feeling", "i-like-you", "confession", "respectful", "soft-ending", "final", "response", "closing-note"
   ].includes(section);
 
   return (
