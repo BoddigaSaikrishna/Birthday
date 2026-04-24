@@ -527,7 +527,9 @@ const Index = () => {
               <SectionOrnament>💌</SectionOrnament>
             <TypingText
               lines={[
-                "Nv Oppukunte...",
+                "Nv nannu oppukunte chepthunna kada...",
+                "ne andhamyna kallalo nunchi,",
+                "ne palaabuggala meeda oka neeti bottu padakunda chuskunta.",
                 "",
                 "Mahabharathamlo Krishna, Radha ni vadulukovadaniki enno karanalu undavacchu...",
                 "kani ee Krishna matram, ninnu vadulukovadaniki enni karanalu unna...",
