@@ -13,10 +13,12 @@ const SONG_URLS = [
   "/Music/Eye.mp3",
   "/Music/Urike Urike (mp3cut.net).mp3",
   "/Music/Krishna.mp4",
+  "/Music/krishna.mp3",
   "/Music/Ottesi cheputhunna.mp4",
   "/Music/Magadhera.mp3",
   "/Music/Smile.mp4",
   "/Music/I need time.mp3",
+  "/Music/Nee Chitram Choosi - SenSongsM3.Com (mp3cut.net).mp3",
 ];
 
 // Create & preload every audio element immediately

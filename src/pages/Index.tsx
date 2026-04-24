@@ -23,6 +23,7 @@ type Section =
   | "prayer"
   | "feeling"
   | "i-like-you"
+  | "sincerity"
   | "confession"
   | "respectful"
   | "soft-ending"
@@ -45,6 +46,7 @@ const SECTIONS: Section[] = [
   "prayer",
   "feeling",
   "i-like-you",
+  "sincerity",
   "confession",
   "respectful",
   "soft-ending",
@@ -114,6 +116,16 @@ const Index = () => {
     setTypingDone(true);
   }, []);
 
+  // Auto-switch music whenever we land on sincerity (works for both direct jump & normal flow)
+  useEffect(() => {
+    if (section === "sincerity") {
+      const timer = setTimeout(() => {
+        musicRef.current?.switchTo("/Music/Nee Chitram Choosi - SenSongsM3.Com (mp3cut.net).mp3");
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [section]);
+
   // #2 — When splash ends, auto-play music
   const handleSplashEnter = () => {
     setShowSplash(false);
@@ -147,9 +159,13 @@ const Index = () => {
     if (next === "i-like-you") {
       musicRef.current?.fadeOut();
     }
-    // Switch to Krishna song when the deep confession starts, video audio ends
+    // Switch to Nee Chitram Choosi for the sincerity section
+    if (next === "sincerity") {
+      musicRef.current?.switchTo("/Music/Nee Chitram Choosi - SenSongsM3.Com (mp3cut.net).mp3");
+    }
+    // Switch to new Krishna song when the Krishna quotes start
     if (next === "confession") {
-      musicRef.current?.switchTo("/Music/Krishna.mp4");
+      musicRef.current?.switchTo("/Music/krishna.mp3");
     }
     // Switch to Panchadhara Bomma after the Krishna confession section
     if (next === "respectful") {
@@ -515,9 +531,33 @@ const Index = () => {
                   💖
                 </p>
               )}
-              {typingDone && <ContinueButton onClick={() => goTo("confession")} />}
+              {typingDone && <ContinueButton onClick={() => goTo("sincerity")} />}
             </div>
           </>
+        );
+
+      case "sincerity":
+        return (
+          <SectionWrapper key={sectionKey}>
+            <SectionOrnament>🤍</SectionOrnament>
+            <TypingText
+              lines={[
+                "Nv anukovacchu...",
+                "nenu kuda kondarilaga edo time pass kosam edanta chesthunna ani.",
+                "",
+                "Nijangane nenu ala chese vadine ayethe...",
+                "1st Time nv 5th floor lo netho mataldinappudu,",
+                "nv vaddu annapuude vadelesevadini.",
+                "",
+                "Ala eppudu anukoledu kabatte...",
+                "nekosam, ne meda istam tho entha varuku vaccha telsa. 🤍",
+              ]}
+              onComplete={handleTypingComplete}
+              speed={48}
+              lineDelay={1000}
+            />
+            {typingDone && <ContinueButton onClick={() => goTo("confession")} />}
+          </SectionWrapper>
         );
 
       case "confession":
