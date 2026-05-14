@@ -132,7 +132,7 @@ const Index = () => {
     }
     if (section === "closing-note") {
       const timer = setTimeout(() => {
-        musicRef.current?.switchTo("/Music/Last.m4a", true);
+        musicRef.current?.switchTo("/Music/Last.mp4", true);
       }, 300);
       return () => clearTimeout(timer);
     }
@@ -183,9 +183,9 @@ const Index = () => {
     if (next === "respectful") {
       musicRef.current?.switchTo("/Music/Magadhera.mp3");
     }
-    // Switch to Last.m4a for the closing note with a nice fade in
+    // Switch to Last.mp4 for the closing note with a nice fade in
     if (next === "closing-note") {
-      musicRef.current?.switchTo("/Music/Last.m4a", true);
+      musicRef.current?.switchTo("/Music/Last.mp4", true);
     }
   };
 
