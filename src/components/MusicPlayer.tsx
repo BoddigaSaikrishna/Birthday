@@ -90,6 +90,18 @@ const MusicPlayer = forwardRef<MusicPlayerRef>((_props, ref) => {
     },
     switchTo: (url: string, slowFade: boolean = false) => {
       const oldUrl = currentUrlRef.current;
+      
+      // Prevent restarting the song if it's already the current one
+      if (oldUrl === url) {
+        const current = audioPool[url];
+        if (current) {
+          current.play().catch(() => {});
+          current.volume = getTargetVolume(url);
+          setPlaying(true);
+        }
+        return;
+      }
+
       const old = audioPool[oldUrl];
       const newAudio = audioPool[url];
       if (!old || !newAudio) return;
