@@ -101,8 +101,8 @@ const EasterEggTooltip = ({ show }: { show: boolean }) => {
 
 // ── Main Component ───────────────────────────────────────
 const Index = () => {
-  const [showSplash, setShowSplash] = useState(false); // 🔧 TEMP: skip splash
-  const [section, setSection] = useState<Section>("i-like-you"); // 🔧 TEMP: jump to section
+  const [showSplash, setShowSplash] = useState(true);
+  const [section, setSection] = useState<Section>("opening");
   const [typingDone, setTypingDone] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
