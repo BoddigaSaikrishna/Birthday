@@ -4,7 +4,7 @@ export interface MusicPlayerRef {
   play: () => void;
   pause: () => void;
   fadeOut: () => void;
-  switchTo: (url: string) => void;
+  switchTo: (url: string, slowFade?: boolean) => void;
 }
 
 // All songs preloaded at module level so they are buffered before any section starts
@@ -87,7 +87,7 @@ const MusicPlayer = forwardRef<MusicPlayerRef>((_props, ref) => {
       }, 60);
       setPlaying(false);
     },
-    switchTo: (url: string) => {
+    switchTo: (url: string, slowFade: boolean = false) => {
       const oldUrl = currentUrlRef.current;
       const old = audioPool[oldUrl];
       const newAudio = audioPool[url];
@@ -101,14 +101,17 @@ const MusicPlayer = forwardRef<MusicPlayerRef>((_props, ref) => {
       newAudio.play().catch(() => {});
       currentUrlRef.current = url;
 
+      const step = slowFade ? 0.015 : 0.05;
+      const intervalTime = slowFade ? 100 : 60;
+
       // Crossfade: fade out old & fade in new simultaneously
       const crossfade = setInterval(() => {
         let oldDone = false;
         let newDone = false;
 
         // Fade out old
-        if (old.volume > 0.03) {
-          old.volume = Math.max(0, old.volume - 0.05);
+        if (old.volume > step) {
+          old.volume = Math.max(0, old.volume - step);
         } else {
           old.volume = 0;
           old.pause();
@@ -116,8 +119,8 @@ const MusicPlayer = forwardRef<MusicPlayerRef>((_props, ref) => {
         }
 
         // Fade in new
-        if (newAudio.volume < targetVolume - 0.05) {
-          newAudio.volume = Math.min(targetVolume, newAudio.volume + 0.05);
+        if (newAudio.volume < targetVolume - step) {
+          newAudio.volume = Math.min(targetVolume, newAudio.volume + step);
         } else {
           newAudio.volume = targetVolume;
           newDone = true;
@@ -126,7 +129,7 @@ const MusicPlayer = forwardRef<MusicPlayerRef>((_props, ref) => {
         if (oldDone && newDone) {
           clearInterval(crossfade);
         }
-      }, 60);
+      }, intervalTime);
 
       setPlaying(true);
     },

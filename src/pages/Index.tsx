@@ -101,8 +101,8 @@ const EasterEggTooltip = ({ show }: { show: boolean }) => {
 
 // ── Main Component ───────────────────────────────────────
 const Index = () => {
-  const [showSplash, setShowSplash] = useState(true);
-  const [section, setSection] = useState<Section>("opening");
+  const [showSplash, setShowSplash] = useState(false); // 🔧 TEMP: skip splash
+  const [section, setSection] = useState<Section>("i-like-you"); // 🔧 TEMP: jump to section
   const [typingDone, setTypingDone] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
@@ -143,9 +143,9 @@ const Index = () => {
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 6000);
     }
-    // Switch to Eye song during eye-contact section
+    // Switch to Eye song during eye-contact section with a slow cinematic fade-in
     if (next === "eye-contact") {
-      musicRef.current?.switchTo("/Music/Eye.mp3");
+      musicRef.current?.switchTo("/Music/Eye.mp3", true);
     }
     // Switch to Smile song for the smile section with automatic fade-in crossfade
     if (next === "smile") {
@@ -448,7 +448,7 @@ const Index = () => {
                 "I started liking you.",
                 "",
                 "I didn't expect this…",
-                "but you became one of the most important people to me,",
+                "but you became the most important person to me,",
                 "even without us talking much.",
                 "",
                 "And I didn't want to keep pretending that I don't.",
@@ -463,7 +463,7 @@ const Index = () => {
       case "i-like-you":
         return (
           <>
-            {/* 🎬 Cinematic Propose.mp4 background — only for this section */}
+            {/* 🎬 Cinematic Propose.mp4 background — full screen */}
             <div className="fixed inset-0 pointer-events-none z-[1] animate-propose-fade-in">
               <video
                 autoPlay
@@ -513,11 +513,15 @@ const Index = () => {
                   "There are things I've kept to myself for a long time…",
                   "But today… I can't.",
                   "",
-                  "So I'll just say it simply…",
-                  "I like you.",
-                  "I love you more than anyone.",
+                  "Neku eppudu direct ga propose cheyaledu…",
+                  "just nv ante istam ane cheppa.",
                   "",
-                  "And I think you deserve to know that. ❤️",
+                  `I Love You, ${HER_NAME} ❤️`,
+                  "",
+                  "You know that I just love you,",
+                  "but you really don't know how much I love you.",
+                  "",
+                  "And I think you deserve to know that. 💖",
                 ]}
                 onComplete={handleTypingComplete}
                 speed={52}
@@ -550,6 +554,11 @@ const Index = () => {
                 "nv vaddu annapuude vadelesevadini.",
                 "",
                 "Ala eppudu anukoledu kabatte...",
+                "Nekosam entha chesano neku teledu,",
+                "nekosam enni floorlu thirigano,",
+                "enni blocklu thirigano naaku matrame telusu…",
+                "just ninnu chuddam kosam. 🤍",
+                "",
                 "nekosam, ne meda istam tho entha varuku vaccha telsa. 🤍",
               ]}
               onComplete={handleTypingComplete}
@@ -753,11 +762,8 @@ const Index = () => {
                 "Ee roju kosam last 1 and half months nunchi wait chesthunna…",
                 "finally ee roju vacchesindhi.",
                 "",
-                "Manam koncham ekkuva matladithe…",
-                "leda daily koncham conversation unte…",
-                "maybe nenu gift ni inka different ga plan chesedani 🙂",
-                "",
-                "Kani ippudu naaku telisina best way lo chesa.",
+                "Sometimes I felt bad that I never expressed how much I love you...",
+                "but now the day has finally came.",
                 "",
                 "Neku manchi experience ichaanani anukuntunnanu…",
                 "kani nee honest opinion chepthe chala happy avutanu ❤️",
