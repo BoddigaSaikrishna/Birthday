@@ -102,7 +102,7 @@ const EasterEggTooltip = ({ show }: { show: boolean }) => {
 // ── Main Component ───────────────────────────────────────
 const Index = () => {
   const [showSplash, setShowSplash] = useState(false); // 🔧 TEMP: skip splash for testing
-  const [section, setSection] = useState<Section>("final"); // 🔧 TEMP: jump to final to test click transition
+  const [section, setSection] = useState<Section>("respectful"); // 🔧 TEMP: jump to respectful
   const [typingDone, setTypingDone] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
@@ -116,11 +116,17 @@ const Index = () => {
     setTypingDone(true);
   }, []);
 
-  // Auto-switch music whenever we land on sincerity or closing-note (works for both direct jump & normal flow)
+  // Auto-switch music whenever we land on certain sections directly
   useEffect(() => {
     if (section === "sincerity") {
       const timer = setTimeout(() => {
         musicRef.current?.switchTo("/Music/Nee Chitram Choosi - SenSongsM3.Com (mp3cut.net).mp3");
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+    if (section === "respectful") {
+      const timer = setTimeout(() => {
+        musicRef.current?.switchTo("/Music/Magadhera.mp3");
       }, 300);
       return () => clearTimeout(timer);
     }
