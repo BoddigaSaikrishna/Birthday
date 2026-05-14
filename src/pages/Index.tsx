@@ -101,8 +101,8 @@ const EasterEggTooltip = ({ show }: { show: boolean }) => {
 
 // ── Main Component ───────────────────────────────────────
 const Index = () => {
-  const [showSplash, setShowSplash] = useState(false); // 🔧 TEMP: skip splash for testing
-  const [section, setSection] = useState<Section>("respectful"); // 🔧 TEMP: jump to respectful
+  const [showSplash, setShowSplash] = useState(true);
+  const [section, setSection] = useState<Section>("opening");
   const [typingDone, setTypingDone] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
@@ -116,27 +116,6 @@ const Index = () => {
     setTypingDone(true);
   }, []);
 
-  // Auto-switch music whenever we land on certain sections directly
-  useEffect(() => {
-    if (section === "sincerity") {
-      const timer = setTimeout(() => {
-        musicRef.current?.switchTo("/Music/Nee Chitram Choosi - SenSongsM3.Com (mp3cut.net).mp3");
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-    if (section === "respectful") {
-      const timer = setTimeout(() => {
-        musicRef.current?.switchTo("/Music/Magadhera.mp3");
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-    if (section === "closing-note") {
-      const timer = setTimeout(() => {
-        musicRef.current?.switchTo("/Music/Last.mp4", true);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [section]);
 
   // #2 — When splash ends, auto-play music
   const handleSplashEnter = () => {
