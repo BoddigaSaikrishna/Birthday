@@ -123,7 +123,7 @@ const Index = () => {
     // Start music after a small delay so the UI is ready
     setTimeout(() => {
       musicRef.current?.play();
-    }, 300);
+    }, 600);
   };
 
   const goTo = (next: Section) => {
@@ -164,13 +164,13 @@ const Index = () => {
     }
     // Switch to Last.mp4 for the closing note with a nice fade in, unless response was 'no'
     if (next === "closing-note" && response !== "no") {
-      musicRef.current?.switchTo("/Music/Last.mp4", true);
+      musicRef.current?.switchTo("/Music/Last.m4a", true);
     }
   };
 
   const handleResponse = (answer: string) => {
     track("Response_Selected", { answer: answer }); // 📊 Log to Vercel Analytics
-    
+
     setTypingDone(false);
     setResponse(answer);
     setSection("response");
@@ -181,11 +181,6 @@ const Index = () => {
       // 🎵 Switch to Ottesi Cheputhunna when she says Yes
       setTimeout(() => {
         musicRef.current?.switchTo("/Music/Ottesi cheputhunna.mp4");
-      }, 600);
-    } else if (answer === "time") {
-      // 🎵 Switch to "I need time.mp3" when she says I need time
-      setTimeout(() => {
-        musicRef.current?.switchTo("/Music/I need time.mp3");
       }, 600);
     } else if (answer === "no") {
       // 🎵 Switch to "No Song.mp4" when she says No
@@ -511,11 +506,9 @@ const Index = () => {
               <SectionOrnament>💗</SectionOrnament>
               <TypingText
                 lines={[
-                  "There are things I've kept to myself for a long time…",
-                  "But today… I can't.",
-                  "",
                   "Neku eppudu direct ga propose cheyaledu…",
                   "just nv ante istam ane cheppa.",
+                  "kani eppudu chepthunna..",
                   "",
                   `I Love You, ${HER_NAME} ❤️`,
                   "",
@@ -554,9 +547,9 @@ const Index = () => {
                 "1st Time nv 5th floor lo netho mataldinappudu,",
                 "nv vaddu annapuude vadelesevadini.",
                 "",
-                "Ala eppudu anukoledu kabatte...",
+                "nenu ala eppudu anukoledu...,",
                 "Nekosam entha chesano neku teledu,",
-                "nekosam enni floorlu thirigano,",
+                "nekosam enni floorlu ekki deganoo,",
                 "enni blocklu thirigano naaku matrame telusu…",
                 "just ninnu chuddam kosam. 🤍",
                 "",
@@ -656,14 +649,14 @@ const Index = () => {
             <TypingText
               lines={[
                 "I don't know what your answer will be…",
-                "But I just wanted to ask…",
+                "But I just wanted to say this..",
                 "",
                 "If someday we were in a relationship…",
                 `I think I'd love to call you '${HER_NICKNAME}' ❤️`,
                 "",
                 `Once again… happiest birthday, my dear ${HER_NICKNAME} 🎂💖`,
                 "",
-                "Will you make me the happiest person? 💖",
+                "Will you Accept my Proposal??",
               ]}
               onComplete={handleTypingComplete}
               speed={44}
@@ -672,9 +665,6 @@ const Index = () => {
               <div className="mt-12 flex flex-col sm:flex-row gap-5 justify-center animate-fade-in-up">
                 <Button variant="confession" size="lg" onClick={() => handleResponse("yes")}>
                   Yes 💖
-                </Button>
-                <Button variant="romantic" size="lg" onClick={() => handleResponse("time")}>
-                  I need time 😊
                 </Button>
                 <Button variant="romantic" size="lg" onClick={() => handleResponse("no")}>
                   No 💔
@@ -719,37 +709,8 @@ const Index = () => {
                   </Button>
                 </div>
               </div>
-            )}
-            {response === "time" && (
-              <div className="space-y-6 text-center">
-                <p className="text-6xl" style={{ filter: "drop-shadow(0 0 12px hsl(45 80% 70%))" }}>
-                  😊
-                </p>
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-display text-foreground/90">
-                  Take all the time you need…
-                </h2>
-                <div className="space-y-2">
-                  <p className="text-base sm:text-lg md:text-xl text-foreground/70 font-light tracking-wide">
-                    I'll be right here, the same as always.
-                  </p>
-                  <p className="text-base sm:text-lg md:text-xl text-foreground/70 font-light tracking-wide">
-                    No pressure, no rush. Just honesty.
-                  </p>
-                </div>
-                <p
-                  className="text-2xl sm:text-3xl font-script text-primary mt-8 text-glow-subtle"
-                  style={{ fontFamily: "var(--font-script)" }}
-                >
-                  Happy Birthday, {HER_NICKNAME} 🎂❤️
-                </p>
-
-                <div className="mt-10 animate-fade-in-up">
-                  <Button variant="romantic" onClick={() => goTo("closing-note")}>
-                    One last thing... 💌
-                  </Button>
-                </div>
-              </div>
-            )}
+            )
+            }
             {response === "no" && (
               <div className="space-y-6 text-center">
                 <p className="text-6xl animate-pulse" style={{ filter: "drop-shadow(0 0 12px hsl(340 50% 50%))" }}>
@@ -787,13 +748,13 @@ const Index = () => {
         return (
           <SectionWrapper key={sectionKey}>
             <SectionOrnament>💌</SectionOrnament>
-            {response === "yes" || response === "time" ? (
+            {response === "yes" ? (
               <TypingText
                 lines={[
                   "Neku nacchindani anukuntunnanu 🙂",
                   "",
                   "Idhi cheyadaniki koncham kastapadanu…",
-                  "kani kastam anipinchina kuda, istam tho chesa.",
+                  "kani kastam anipinchina kuda, ne medha istam tho chesa.",
                   "",
                   "Ee roju kosam last 1 and half months nunchi wait chesthunna…",
                   "finally ee roju vacchesindhi.",

@@ -591,3 +591,57 @@ button, a, [role="button"] {
   0%   { opacity: 0; }
   100% { opacity: 1; }
 }
+
+/* 💃 Romantic Couple Loader */
+
+@keyframes slowDanceSway {
+  0%   { transform: rotate(-3deg) translateY(0px); }
+  50%  { transform: rotate(3deg) translateY(-3px); }
+  100% { transform: rotate(-3deg) translateY(0px); }
+}
+
+@keyframes skirtSway {
+  0%   { transform: rotate(-2deg) scaleX(0.98); }
+  50%  { transform: rotate(4deg) scaleX(1.02); }
+  100% { transform: rotate(-2deg) scaleX(0.98); }
+}
+
+@keyframes haloBreath {
+  0%   { opacity: 0.65; transform: scale(0.96); }
+  100% { opacity: 1;   transform: scale(1.04); }
+}
+
+@keyframes handSpark {
+  0%, 100% { transform: scale(0.8); opacity: 0.4; }
+  50%       { transform: scale(1.4); opacity: 1; }
+}
+
+@keyframes sparkleFloat {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.6);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-350px) translateX(25px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+/* Dot bounce for loading indicator */
+@keyframes dotBounce {
+  0%, 100% { transform: translateY(0);    opacity: 0.5; }
+  50%       { transform: translateY(-7px); opacity: 1; }
+}
+
+/* Typing cursor blink */
+@keyframes typingCursor {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
