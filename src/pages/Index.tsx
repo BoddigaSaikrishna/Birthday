@@ -168,8 +168,8 @@ const Index = () => {
     if (next === "promise") {
       musicRef.current?.switchTo("/Music/Promise.m4a");
     }
-    // Switch to Last.mp4 for the closing note with a nice fade in, unless response was 'no'
-    if (next === "closing-note" && response !== "no") {
+    // Switch to Last.m4a for the closing note with a nice fade in (both Yes and No paths)
+    if (next === "closing-note") {
       musicRef.current?.switchTo("/Music/Last.m4a", true);
     }
   };
