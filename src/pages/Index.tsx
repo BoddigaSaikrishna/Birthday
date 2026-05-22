@@ -663,7 +663,7 @@ const Index = () => {
                 "",
                 "Nee manasulo em vundo teledu",
                 "kani na manasulo matram",
-                "nv eppudu na pakkana vunte bagundadi ani vunde… 🤍",
+                "nv eppudu na pakkana vunte bagundadi ani vunde… ade emo neku artham kadu..🤍",
                 "",
                 "Istanga Premenchan abba…",
                 "entha kastam vacchina vadulukonu",
