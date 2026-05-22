@@ -742,6 +742,20 @@ const Index = () => {
                     "",
                     "I'll reach you first and love you before anyone else even notices you",
                     "kanisam appudu ayena nannu accept chesthe ade chaluu..",
+                    "",
+                    "Neku nacchindani anukuntunnanu 🙂",
+                    "",
+                    "Idhi cheyadaniki koncham kastapadanu…",
+                    "kani kastam anipinchina kuda, ne medha istam tho chesa.",
+                    "",
+                    "Ee roju kosam last 1 and half months nunchi wait chesthunna…",
+                    "finally ee roju vacchesindhi.",
+                    "",
+                    "Sometimes I felt bad that I never expressed how much I love you...",
+                    "but now the day has finally came.",
+                    "",
+                    "Neku manchi experience ichaanani anukuntunnanu…",
+                    "kani nee honest opinion chepthe chala happy avutanu ❤️",
                   ]}
                   onComplete={handleTypingComplete}
                   speed={42}
