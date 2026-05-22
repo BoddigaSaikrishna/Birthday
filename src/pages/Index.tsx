@@ -27,6 +27,7 @@ type Section =
   | "confession"
   | "respectful"
   | "soft-ending"
+  | "promise"
   | "final"
   | "response"
   | "closing-note";
@@ -50,6 +51,7 @@ const SECTIONS: Section[] = [
   "confession",
   "respectful",
   "soft-ending",
+  "promise",
   "final",
 ];
 
@@ -637,6 +639,35 @@ const Index = () => {
               ]}
               onComplete={handleTypingComplete}
               speed={42}
+            />
+            {typingDone && <ContinueButton onClick={() => goTo("promise")} />}
+          </SectionWrapper>
+        );
+
+      case "promise":
+        return (
+          <SectionWrapper key={sectionKey}>
+            <SectionOrnament>🤝</SectionOrnament>
+            <TypingText
+              lines={[
+                "Okati matram gurthupettuko life lo…",
+                "",
+                "aa situation vacchina sare,",
+                "ela ne cheyyi pattukoni",
+                "ne pakkane nilabaduthu",
+                "nennu nennu la vundanechela chusukunta.",
+                "",
+                "Nee manasulo em vundo teledu",
+                "kani na manasulo matram",
+                "nv eppudu na pakkana vunte bagundadi ani vunde… 🤍",
+                "",
+                "Istanga Premenchan abba…",
+                "entha kastam vacchina vadulukonu",
+                "gurthupettukoo ❤️",
+              ]}
+              onComplete={handleTypingComplete}
+              speed={46}
+              lineDelay={900}
             />
             {typingDone && <ContinueButton onClick={() => goTo("final")} />}
           </SectionWrapper>
