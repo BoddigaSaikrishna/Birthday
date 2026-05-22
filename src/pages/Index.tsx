@@ -716,29 +716,50 @@ const Index = () => {
                 <p className="text-6xl animate-pulse" style={{ filter: "drop-shadow(0 0 12px hsl(340 50% 50%))" }}>
                   💔
                 </p>
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-display text-foreground/90">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-display text-foreground/90 mb-6">
                   I respect your decision…
                 </h2>
-                <div className="space-y-2">
-                  <p className="text-base sm:text-lg md:text-xl text-foreground/70 font-light tracking-wide">
-                    Thank you for being honest with me.
-                  </p>
-                  <p className="text-base sm:text-lg md:text-xl text-foreground/70 font-light tracking-wide">
-                    Your feelings matter to me more than anything.
-                  </p>
-                </div>
-                <p
-                  className="text-2xl sm:text-3xl font-script text-primary mt-8 text-glow-subtle"
-                  style={{ fontFamily: "var(--font-script)" }}
-                >
-                  Happy Birthday, {HER_NICKNAME} 🎂❤️
-                </p>
-
-                <div className="mt-10 animate-fade-in-up">
-                  <Button variant="romantic" onClick={() => goTo("closing-note")}>
-                    One last thing... 💌
-                  </Button>
-                </div>
+                <TypingText
+                  lines={[
+                    "Thank you for being honest with me.",
+                    "Your feelings matter to me more than anything.",
+                    "",
+                    "Neku nijanga istam lekunte…",
+                    "nenu inka emi cheyalenu 🙂",
+                    "",
+                    "Endukante relationship anedhi",
+                    "iddari feelings tho untundi kada.",
+                    "",
+                    "0 × 1000 aina answer 0 eh…",
+                    "nenu entha istapadina,",
+                    "nee side nunchi kanisam konchem feeling lekunte",
+                    "force chesi meaning undadu.",
+                    "",
+                    "Anduke…",
+                    "ninnu force cheyadam naku istam ledu ❤️",
+                    "",
+                    "kanisam next janma lo ayena ..",
+                    "",
+                    "I'll reach you first and love you before anyone else even notices you",
+                    "kanisam appudu ayena nannu accept chesthe ade chaluu..",
+                  ]}
+                  onComplete={handleTypingComplete}
+                  speed={42}
+                />
+                {typingDone && (
+                  <div className="animate-fade-in-up">
+                    <p
+                      className="text-2xl sm:text-3xl font-script text-primary mt-8 text-glow-subtle"
+                      style={{ fontFamily: "var(--font-script)" }}
+                    >
+                      Happy Birthday, {HER_NICKNAME} 🎂❤️
+                    </p>
+                    <div className="mt-8 flex flex-col items-center">
+                      <Signature />
+                      <ReplayButton onClick={handleReplay} />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </SectionWrapper>
@@ -748,52 +769,25 @@ const Index = () => {
         return (
           <SectionWrapper key={sectionKey}>
             <SectionOrnament>💌</SectionOrnament>
-            {response === "yes" ? (
-              <TypingText
-                lines={[
-                  "Neku nacchindani anukuntunnanu 🙂",
-                  "",
-                  "Idhi cheyadaniki koncham kastapadanu…",
-                  "kani kastam anipinchina kuda, ne medha istam tho chesa.",
-                  "",
-                  "Ee roju kosam last 1 and half months nunchi wait chesthunna…",
-                  "finally ee roju vacchesindhi.",
-                  "",
-                  "Sometimes I felt bad that I never expressed how much I love you...",
-                  "but now the day has finally came.",
-                  "",
-                  "Neku manchi experience ichaanani anukuntunnanu…",
-                  "kani nee honest opinion chepthe chala happy avutanu ❤️",
-                ]}
-                onComplete={handleTypingComplete}
-                speed={42}
-              />
-            ) : (
-              <TypingText
-                lines={[
-                  "Neku nijanga istam lekunte…",
-                  "nenu inka emi cheyalenu 🙂",
-                  "",
-                  "Endukante relationship anedhi",
-                  "iddari feelings tho untundi kada.",
-                  "",
-                  "0 × 1000 aina answer 0 eh…",
-                  "nenu entha istapadina,",
-                  "nee side nunchi kanisam konchem feeling lekunte",
-                  "force chesi meaning undadu.",
-                  "",
-                  "Anduke…",
-                  "ninnu force cheyadam naku istam ledu ❤️",
-                  "",
-                  "kanisam next janma lo ayena ..",
-                  "",
-                  "I'll reach you first and love you before anyone else even notices you",
-                  "kanisam appudu ayena nannu accept chesthe ade chaluu..",
-                ]}
-                onComplete={handleTypingComplete}
-                speed={42}
-              />
-            )}
+            <TypingText
+              lines={[
+                "Neku nacchindani anukuntunnanu 🙂",
+                "",
+                "Idhi cheyadaniki koncham kastapadanu…",
+                "kani kastam anipinchina kuda, ne medha istam tho chesa.",
+                "",
+                "Ee roju kosam last 1 and half months nunchi wait chesthunna…",
+                "finally ee roju vacchesindhi.",
+                "",
+                "Sometimes I felt bad that I never expressed how much I love you...",
+                "but now the day has finally came.",
+                "",
+                "Neku manchi experience ichaanani anukuntunnanu…",
+                "kani nee honest opinion chepthe chala happy avutanu ❤️",
+              ]}
+              onComplete={handleTypingComplete}
+              speed={42}
+            />
             {typingDone && (
               <div className="mt-8 flex flex-col items-center">
                 <Signature />
