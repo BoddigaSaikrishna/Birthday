@@ -12,7 +12,6 @@ const SONG_URLS = [
   "/Music/Tum Hi Ho Aashiqui 2 128 Kbps.mp3",
   "/Music/Eye.mp3",
   "/Music/Urike Urike (mp3cut.net).mp3",
-  "/Music/Krishna.mp4",
   "/Music/krishna.mp3",
   "/Music/Ottesi cheputhunna.mp4",
   "/Music/Magadhera.mp3",
