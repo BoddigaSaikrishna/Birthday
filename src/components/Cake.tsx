@@ -183,7 +183,7 @@ const Cake = ({ onCut }: CakeProps) => {
             className="text-2xl font-script text-glow-pink shimmer-text"
             style={{ fontFamily: "var(--font-script, cursive)" }}
           >
-            Happy Birthday, Leelu! 🎂🎉
+            Happy Birthday, Leela! 🎂🎉
           </p>
         )}
       </div>
