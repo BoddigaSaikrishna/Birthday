@@ -656,7 +656,7 @@ const Index = () => {
               lines={[
                 "Remind this i am only the person that i love you more than any one else  after your Parents...",
                 "",
-                "Nv Accept chesthee....",
+                "",
                 "Okati matram gurthupettuko Leela life lo…",
                 "",
                 "aa situation vacchina sare,",
