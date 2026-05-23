@@ -160,50 +160,7 @@ const MusicPlayer = forwardRef<MusicPlayerRef>((_props, ref) => {
     setPlaying(!playing);
   };
 
-  return (
-    <button
-      onClick={toggle}
-      className="fixed top-5 right-5 z-50"
-      aria-label={playing ? "Mute music" : "Play music"}
-      title={playing ? "Mute music" : "Play music"}
-    >
-      <div
-        className="relative flex items-center justify-center"
-        style={{ width: 48, height: 48 }}
-      >
-        {/* Animated pulse rings when playing */}
-        {playing && (
-          <>
-            <span
-              className="absolute inset-0 rounded-full border border-pink-400/60"
-              style={{ animation: "pulse-ring-anim 2.2s ease-out infinite" }}
-            />
-            <span
-              className="absolute inset-0 rounded-full border border-purple-400/40"
-              style={{ animation: "pulse-ring-anim 2.2s ease-out 0.9s infinite" }}
-            />
-          </>
-        )}
-
-        {/* Button face */}
-        <span
-          className="relative flex items-center justify-center w-12 h-12 rounded-full backdrop-blur-md transition-all duration-300"
-          style={{
-            background: playing
-              ? "linear-gradient(135deg, hsl(330 70% 25% / 0.92) 0%, hsl(280 60% 18% / 0.88) 100%)"
-              : "hsl(270 20% 12% / 0.85)",
-            border: `1.5px solid ${playing ? "hsl(330 80% 55% / 0.6)" : "hsl(280 30% 30% / 0.5)"}`,
-            boxShadow: playing
-              ? "0 0 16px hsl(330 80% 60% / 0.5), 0 0 35px hsl(280 60% 50% / 0.25)"
-              : "0 2px 12px hsl(0 0% 0% / 0.4)",
-            fontSize: "18px",
-          }}
-        >
-          {playing ? "🎵" : "🎶"}
-        </span>
-      </div>
-    </button>
-  );
+  return null;
 });
 
 MusicPlayer.displayName = "MusicPlayer";
