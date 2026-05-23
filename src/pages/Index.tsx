@@ -654,7 +654,10 @@ const Index = () => {
             <SectionOrnament>🤝</SectionOrnament>
             <TypingText
               lines={[
-                "Okati matram gurthupettuko life lo…",
+                "Remind this i am only the person that i love you more than any one else  after your Parents...",
+                "",
+                "Nv Accept chesthee....",
+                "Okati matram gurthupettuko Leela life lo…",
                 "",
                 "aa situation vacchina sare,",
                 "ela ne cheyyi pattukoni",
