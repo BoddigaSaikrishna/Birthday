@@ -380,7 +380,7 @@ const Index = () => {
                 "",
                 "Anta magic undi…",
                 "nuvvu prathi sari navvinappudu",
-                "nenu bayata silent ga untanu gani,",
+                "nenu bayata normal ga untanu gani,",
                 "",
                 "na chitti gunde lopala chitukku mantadi telsa.. 💓",
                 "chudu eppudu kuda aa navvuu 🥰✨",
