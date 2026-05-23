@@ -645,3 +645,11 @@ button, a, [role="button"] {
   50%       { opacity: 0; }
 }
 
+.animate-flame-flicker {
+  animation: flame-flicker 0.8s ease-in-out infinite alternate;
+}
+
+.animate-knife-cut {
+  animation: knife-cut 0.8s ease-in-out forwards;
+}
+

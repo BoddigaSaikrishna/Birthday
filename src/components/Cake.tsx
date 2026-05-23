@@ -1,352 +1,388 @@
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 
 interface CakeProps {
   onCut: () => void;
 }
 
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  color: string;
+  size: number;
+  opacity: number;
+  type: "sparkle" | "smoke" | "star";
+}
+
 const Cake = ({ onCut }: CakeProps) => {
-  const [candleBlown, setCandleBlown] = useState(false);
-  const [cutting, setCutting] = useState(false);
-  const [cut, setCut] = useState(false);
-  const [showMessage, setShowMessage] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
-  const [sparkleParticles, setSparkleParticles] = useState<{ id: number; x: number; y: number; color: string }[]>([]);
+  const [step, setStep] = useState<"blow" | "wish" | "cut" | "done">("blow");
+  const [candlesLit, setCandlesLit] = useState([true, true, true, true, true]);
+  const [sliceActive, setSliceActive] = useState(false);
+  const [particles, setParticles] = useState<Particle[]>([]);
+  const particleIdRef = useRef(0);
 
-  const candleColors = [
-    "hsl(330 80% 65%)",
-    "hsl(280 70% 65%)",
-    "hsl(45 90% 65%)",
-    "hsl(200 80% 65%)",
-    "hsl(150 70% 55%)",
-  ];
+  // Generate particles (sparkles/smoke/stars)
+  const spawnParticles = (
+    x: number,
+    y: number,
+    count: number,
+    type: "sparkle" | "smoke" | "star",
+    baseColor?: string
+  ) => {
+    const colors = baseColor
+      ? [baseColor]
+      : ["#ff69b4", "#ffb6c1", "#ffeb3b", "#00e5ff", "#e040fb", "#ffffff"];
+    
+    const newParticles: Particle[] = Array.from({ length: count }, () => {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = type === "smoke" ? 0.3 + Math.random() * 0.5 : 1 + Math.random() * 3;
+      particleIdRef.current += 1;
+      return {
+        id: particleIdRef.current,
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: type === "smoke" ? -speed : Math.sin(angle) * speed - 1, // natural float up
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: type === "smoke" ? 8 + Math.random() * 8 : type === "star" ? 6 + Math.random() * 4 : 3 + Math.random() * 3,
+        opacity: 1,
+        type,
+      };
+    });
 
-  const handleBlowCandle = () => {
-    if (candleBlown) return;
-    setCandleBlown(true);
-    // Trigger sparkles
-    const particles = Array.from({ length: 20 }, (_, i) => ({
-      id: i,
-      x: 45 + Math.random() * 10,
-      y: 20 + Math.random() * 20,
-      color: candleColors[Math.floor(Math.random() * candleColors.length)],
-    }));
-    setSparkleParticles(particles);
-    setTimeout(() => setSparkleParticles([]), 1500);
+    setParticles((prev) => [...prev, ...newParticles]);
+
+    // Animate particles
+    const startTime = Date.now();
+    const duration = type === "smoke" ? 1500 : 1200;
+
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = elapsed / duration;
+
+      if (progress >= 1) {
+        setParticles((prev) => prev.filter((p) => !newParticles.some((np) => np.id === p.id)));
+        clearInterval(interval);
+      } else {
+        setParticles((prev) =>
+          prev.map((p) => {
+            const match = newParticles.find((np) => np.id === p.id);
+            if (match) {
+              return {
+                ...p,
+                x: p.x + p.vx,
+                y: p.y + p.vy,
+                vy: p.type === "smoke" ? p.vy - 0.02 : p.vy + 0.1, // gravity for sparks, lift for smoke
+                opacity: 1 - progress,
+                size: p.type === "smoke" ? p.size + 0.3 : p.size, // smoke expands
+              };
+            }
+            return p;
+          })
+        );
+      }
+    }, 30);
   };
 
-  // Step 1: tapping the cake opens the popup
-  const handleTapCake = () => {
-    if (!candleBlown || cutting || cut) return;
-    setShowPopup(true);
-  };
+  // Blow out a candle
+  const handleBlowCandle = (index: number, e: React.MouseEvent) => {
+    if (step !== "blow" || !candlesLit[index]) return;
 
-  // Step 2: confirmed in popup → run the actual cut
-  const handleConfirmCut = () => {
-    setShowPopup(false);
-    setCutting(true);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const parentRect = e.currentTarget.parentElement?.getBoundingClientRect();
+    if (!parentRect) return;
+
+    const clickX = rect.left - parentRect.left + rect.width / 2;
+    const clickY = rect.top - parentRect.top;
+
+    const newLit = [...candlesLit];
+    newLit[index] = false;
+    setCandlesLit(newLit);
+
+    // Sparkles on blowout
+    spawnParticles(clickX, clickY, 12, "sparkle");
+    // Smoke trail
     setTimeout(() => {
-      setCut(true);
-      setCutting(false);
-      // Trigger a burst of sparkles
-      const particles = Array.from({ length: 30 }, (_, i) => ({
-        id: i + 100,
-        x: 30 + Math.random() * 40,
-        y: 30 + Math.random() * 40,
-        color: candleColors[Math.floor(Math.random() * candleColors.length)],
-      }));
-      setSparkleParticles(particles);
-      setTimeout(() => setSparkleParticles([]), 2000);
-    }, 800);
-    setTimeout(() => setShowMessage(true), 1200);
+      spawnParticles(clickX, clickY - 5, 8, "smoke", "#7a7a7a");
+    }, 150);
+
+    // Check if all candles are blown
+    if (newLit.every((lit) => !lit)) {
+      setTimeout(() => {
+        setStep("wish");
+      }, 1000);
+    }
+  };
+
+  // Blow all candles at once (fallback helper)
+  const handleBlowAll = () => {
+    if (step !== "blow") return;
+    setCandlesLit([false, false, false, false, false]);
+    spawnParticles(140, 60, 40, "sparkle");
+    setTimeout(() => {
+      setStep("wish");
+    }, 1000);
+  };
+
+  // Wish completed
+  const handleWishDone = () => {
+    setStep("cut");
+  };
+
+  // Slice the cake
+  const handleCutCake = (e: React.MouseEvent) => {
+    if (step !== "cut" || sliceActive) return;
+
+    setSliceActive(true);
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+
+    // Trigger cutting sparkles down the middle
+    let currentY = 30;
+    const cutInterval = setInterval(() => {
+      if (currentY > 180) {
+        clearInterval(cutInterval);
+      } else {
+        spawnParticles(140, currentY, 4, "star", "#ffd700");
+        currentY += 15;
+      }
+    }, 50);
+
+    // Split cake
+    setTimeout(() => {
+      setStep("done");
+      // Huge confetti explosion
+      spawnParticles(140, 120, 50, "sparkle");
+    }, 850);
   };
 
   return (
-    <div className="flex flex-col items-center gap-6 select-none">
-      {/* Instruction */}
-      <p className="text-sm uppercase tracking-[0.25em] text-foreground/40 font-light">
-        {!candleBlown
-          ? "Tap the flame to blow out the candles 🕯️"
-          : !cut
-          ? "Now tap the cake to cut it! 🔪"
-          : "🎉 Happy Birthday, Leelu! 🎉"}
-      </p>
+    <div className="flex flex-col items-center gap-6 select-none w-full max-w-md mx-auto">
+      {/* ── Guidance Prompts ── */}
+      <div className="text-center h-16 flex flex-col justify-center">
+        {step === "blow" && (
+          <p className="text-sm uppercase tracking-[0.2em] text-primary text-glow-pink animate-pulse">
+            Tap each flame to blow out the candles! 🕯️✨
+          </p>
+        )}
+        {step === "wish" && (
+          <p className="text-base font-medium text-purple-200 tracking-wide animate-fade-in-up">
+            Close your eyes and make a wish in your heart... 💫
+          </p>
+        )}
+        {step === "cut" && (
+          <p className="text-sm uppercase tracking-[0.2em] text-accent text-glow-pink animate-pulse">
+            Ready? Tap the cake to slice it! 🔪
+          </p>
+        )}
+        {step === "done" && (
+          <p
+            className="text-2xl font-script text-glow-pink shimmer-text"
+            style={{ fontFamily: "var(--font-script, cursive)" }}
+          >
+            Happy Birthday, Leelu! 🎂🎉
+          </p>
+        )}
+      </div>
 
-      {/* Cake SVG Scene */}
-      <div className="relative" style={{ width: 280, height: 240 }}>
-        {/* Sparkle Particles */}
-        {sparkleParticles.map((p) => (
+      {/* ── Cake Arena ── */}
+      <div
+        onClick={(e) => {
+          if (step === "cut") handleCutCake(e);
+        }}
+        className={`relative cursor-pointer transition-transform duration-500 ${
+          step === "cut" && !sliceActive ? "hover:scale-[1.02] active:scale-[0.98]" : ""
+        }`}
+        style={{ width: 300, height: 260 }}
+      >
+        {/* Render Particles */}
+        {particles.map((p) => (
           <div
             key={p.id}
-            className="absolute pointer-events-none"
+            className="absolute pointer-events-none rounded-full"
             style={{
-              left: `${p.x}%`,
-              top: `${p.y}%`,
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              background: p.color,
-              boxShadow: `0 0 8px ${p.color}`,
-              animation: "cake-sparkle 1.2s ease-out forwards",
+              left: p.x,
+              top: p.y,
+              width: p.size,
+              height: p.size,
+              backgroundColor: p.color,
+              opacity: p.opacity,
+              boxShadow: p.type === "smoke" ? "none" : `0 0 ${p.size * 1.5}px ${p.color}`,
+              transform: p.type === "star" ? "rotate(45deg)" : "none",
+              zIndex: 99,
             }}
           />
         ))}
 
-        {/* Cake Left Half */}
+        {/* ── 3D Silver Plate ── */}
         <div
-          className="absolute"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2"
           style={{
-            left: cut ? "5%" : "10%",
-            bottom: 0,
-            width: cut ? "42%" : "80%",
-            height: 160,
-            transition: "all 0.7s cubic-bezier(0.23, 1, 0.32, 1)",
-            transformOrigin: "right bottom",
+            width: 270,
+            height: 28,
+            borderRadius: "50%",
+            background: "linear-gradient(180deg, hsl(270 20% 40% / 0.5) 0%, hsl(270 20% 15% / 0.8) 100%)",
+            border: "1.5px solid hsl(330 80% 65% / 0.3)",
+            boxShadow: "0 10px 30px hsl(0 0% 0% / 0.6), inset 0 2px 4px hsl(330 80% 70% / 0.2)",
+            zIndex: 1,
           }}
-        >
-          {/* Plate beneath left */}
-          {cut && (
+        />
+
+        {/* ── THE CAKE ── */}
+        <div className="absolute inset-0 z-10 flex justify-center items-end pb-8">
+          {/* Cake Group with animated sliding halves */}
+          <div className="relative w-[210px] h-[140px]">
+            {/* LEFT HALF */}
             <div
+              className="absolute left-0 bottom-0 w-[105px] h-[140px] transition-transform cubic-bezier(0.25, 1, 0.5, 1)"
               style={{
-                position: "absolute",
-                bottom: -10,
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: "110%",
-                height: 12,
-                borderRadius: "50%",
-                background: "linear-gradient(180deg, hsl(220 20% 92%), hsl(220 20% 80%))",
-                boxShadow: "0 4px 12px hsl(0 0% 0% / 0.3)",
+                transform: step === "done" ? "translateX(-28px) rotate(-3deg)" : "none",
+                transitionDuration: "1000ms",
               }}
-            />
-          )}
+            >
+              {/* Outer Shell (Left Half) */}
+              <div
+                className="absolute inset-0 overflow-hidden"
+                style={{
+                  background: "linear-gradient(135deg, hsl(330 75% 58%) 0%, hsl(310 65% 48%) 50%, hsl(280 60% 38%) 100%)",
+                  borderRadius: "20px 0 0 12px",
+                  borderLeft: "2px solid hsl(330 80% 75% / 0.3)",
+                  boxShadow: "inset 2px 2px 6px hsl(330 80% 80% / 0.2), -10px 10px 25px hsl(0 0% 0% / 0.5)",
+                }}
+              >
+                {/* Frosting Drips */}
+                <div className="absolute top-0 left-0 right-0 h-4 bg-white rounded-t-[18px]">
+                  <div className="absolute top-3 left-[15%] w-3 h-5 bg-white rounded-b-full" />
+                  <div className="absolute top-3 left-[45%] w-2.5 h-7 bg-white rounded-b-full" />
+                  <div className="absolute top-3 left-[75%] w-3.5 h-4 bg-white rounded-b-full" />
+                </div>
 
-          {/* Cake Body Left */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: "100%",
-              borderRadius: cut ? "16px 8px 8px 16px" : "16px 16px 8px 8px",
-              background:
-                "linear-gradient(160deg, hsl(330 80% 70%) 0%, hsl(0 70% 60%) 40%, hsl(20 80% 55%) 100%)",
-              boxShadow: cut
-                ? "inset -2px 0 12px hsl(0 0% 0% / 0.15), -4px 8px 30px hsl(330 80% 65% / 0.4)"
-                : "0 8px 30px hsl(330 80% 65% / 0.5)",
-              overflow: "hidden",
-            }}
-          >
-            {/* Cake Layers */}
-            <div style={{ position: "absolute", top: "33%", left: 0, right: 0, height: 3, background: "hsl(45 90% 88% / 0.5)", borderRadius: 2 }} />
-            <div style={{ position: "absolute", top: "66%", left: 0, right: 0, height: 3, background: "hsl(45 90% 88% / 0.5)", borderRadius: 2 }} />
+                {/* Cream Swirl Dollops (Left Half) */}
+                <div className="absolute -top-2 left-[15%] w-4 h-4 bg-pink-100 rounded-full shadow-md" />
+                <div className="absolute -top-2 left-[55%] w-4 h-4 bg-pink-100 rounded-full shadow-md" />
 
-            {/* Cream Frosting on top */}
+                {/* Left side Sprinkles */}
+                <div className="absolute top-1/3 left-[20%] w-3 h-1 bg-yellow-300 rounded-full rotate-45" />
+                <div className="absolute top-1/2 left-[40%] w-3 h-1 bg-cyan-300 rounded-full -rotate-12" />
+                <div className="absolute top-[70%] left-[15%] w-3 h-1 bg-purple-300 rounded-full rotate-12" />
+                <div className="absolute top-[60%] left-[55%] w-3 h-1 bg-white rounded-full -rotate-45" />
+              </div>
+
+              {/* 🍓 Cream & Strawberry on Top */}
+              <div className="absolute -top-3 left-[30%] w-6 h-5 bg-white rounded-full shadow-sm flex items-center justify-center">
+                <span className="text-xs -mt-1 select-none">🍓</span>
+              </div>
+
+              {/* 🍰 INNER CUT-SURFACE (REVEALED WHEN CUT) */}
+              {step === "done" && (
+                <div
+                  className="absolute right-0 top-0 bottom-0 w-[16px] transition-opacity duration-500"
+                  style={{
+                    transform: "skewY(10deg) translateX(4px)",
+                    background: "linear-gradient(to bottom, #fff 0%, #fff 10%, #ffd54f 10%, #ffd54f 35%, #e91e63 35%, #e91e63 45%, #ffd54f 45%, #ffd54f 70%, #8d6e63 70%, #8d6e63 80%, #ffd54f 80%)",
+                    borderLeft: "1.5px solid hsl(330 80% 50% / 0.5)",
+                    boxShadow: "inset 1px 0 3px rgba(0,0,0,0.15)",
+                    borderRadius: "0 3px 3px 0",
+                  }}
+                />
+              )}
+            </div>
+
+            {/* RIGHT HALF */}
             <div
+              className="absolute right-0 bottom-0 w-[105px] h-[140px] transition-transform cubic-bezier(0.25, 1, 0.5, 1)"
               style={{
-                position: "absolute",
-                top: -6,
-                left: -2,
-                right: -2,
-                height: 16,
-                background: "linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(330 50% 95%) 100%)",
-                borderRadius: "8px 8px 0 0",
-                boxShadow: "0 2px 8px hsl(0 0% 0% / 0.15)",
+                transform: step === "done" ? "translateX(28px) rotate(3deg)" : "none",
+                transitionDuration: "1000ms",
               }}
-            />
-
-            {/* Drips */}
-            {[15, 35, 55, 75].map((left, i) => (
+            >
+              {/* Outer Shell (Right Half) */}
               <div
-                key={i}
+                className="absolute inset-0 overflow-hidden"
                 style={{
-                  position: "absolute",
-                  top: 0,
-                  left: `${left}%`,
-                  width: 8,
-                  height: 18 + (i % 2) * 8,
-                  background: "hsl(330 80% 90%)",
-                  borderRadius: "0 0 8px 8px",
+                  background: "linear-gradient(135deg, hsl(330 75% 58%) 0%, hsl(310 65% 48%) 50%, hsl(280 60% 38%) 100%)",
+                  borderRadius: "0 20px 12px 0",
+                  borderRight: "2px solid hsl(330 80% 75% / 0.3)",
+                  boxShadow: "inset -2px 2px 6px hsl(330 80% 80% / 0.2), 10px 10px 25px hsl(0 0% 0% / 0.5)",
                 }}
-              />
-            ))}
+              >
+                {/* Frosting Drips */}
+                <div className="absolute top-0 left-0 right-0 h-4 bg-white rounded-t-[18px]">
+                  <div className="absolute top-3 left-[20%] w-3.5 h-6 bg-white rounded-b-full" />
+                  <div className="absolute top-3 left-[55%] w-2.5 h-4 bg-white rounded-b-full" />
+                  <div className="absolute top-3 left-[80%] w-3 h-5 bg-white rounded-b-full" />
+                </div>
 
-            {/* Sprinkles */}
-            {[
-              { top: "20%", left: "20%", color: "hsl(45 90% 70%)", rot: 45 },
-              { top: "45%", left: "60%", color: "hsl(200 80% 70%)", rot: -30 },
-              { top: "70%", left: "30%", color: "hsl(120 60% 70%)", rot: 60 },
-              { top: "55%", left: "45%", color: "hsl(280 70% 70%)", rot: 15 },
-            ].map((s, i) => (
-              <div
-                key={i}
-                style={{
-                  position: "absolute",
-                  top: s.top,
-                  left: s.left,
-                  width: 12,
-                  height: 4,
-                  background: s.color,
-                  borderRadius: 2,
-                  transform: `rotate(${s.rot}deg)`,
-                }}
-              />
-            ))}
+                {/* Cream Swirl Dollops (Right Half) */}
+                <div className="absolute -top-2 left-[25%] w-4 h-4 bg-pink-100 rounded-full shadow-md" />
+                <div className="absolute -top-2 left-[65%] w-4 h-4 bg-pink-100 rounded-full shadow-md" />
+
+                {/* Right side Sprinkles */}
+                <div className="absolute top-1/3 left-[40%] w-3 h-1 bg-yellow-300 rounded-full -rotate-45" />
+                <div className="absolute top-1/2 left-[20%] w-3 h-1 bg-cyan-300 rounded-full rotate-30" />
+                <div className="absolute top-[65%] left-[65%] w-3 h-1 bg-purple-300 rounded-full -rotate-12" />
+                <div className="absolute top-[75%] left-[30%] w-3 h-1 bg-white rounded-full rotate-60" />
+              </div>
+
+              {/* 🍓 Cream & Strawberry on Top */}
+              <div className="absolute -top-3 left-[50%] w-6 h-5 bg-white rounded-full shadow-sm flex items-center justify-center">
+                <span className="text-xs -mt-1 select-none">🍓</span>
+              </div>
+
+              {/* 🍰 INNER CUT-SURFACE (REVEALED WHEN CUT) */}
+              {step === "done" && (
+                <div
+                  className="absolute left-0 top-0 bottom-0 w-[16px] transition-opacity duration-500"
+                  style={{
+                    transform: "skewY(-10deg) translateX(-4px)",
+                    background: "linear-gradient(to bottom, #fff 0%, #fff 10%, #ffd54f 10%, #ffd54f 35%, #e91e63 35%, #e91e63 45%, #ffd54f 45%, #ffd54f 70%, #8d6e63 70%, #8d6e63 80%, #ffd54f 80%)",
+                    borderRight: "1.5px solid hsl(330 80% 50% / 0.5)",
+                    boxShadow: "inset -1px 0 3px rgba(0,0,0,0.15)",
+                    borderRadius: "3px 0 0 3px",
+                  }}
+                />
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Cake Right Half (only when cut) */}
-        {cut && (
-          <div
-            className="absolute"
-            style={{
-              right: "4%",
-              bottom: 0,
-              width: "42%",
-              height: 160,
-              animation: "cake-slide-right 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards",
-            }}
-          >
-            {/* Plate beneath right */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: -10,
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: "110%",
-                height: 12,
-                borderRadius: "50%",
-                background: "linear-gradient(180deg, hsl(220 20% 92%), hsl(220 20% 80%))",
-                boxShadow: "0 4px 12px hsl(0 0% 0% / 0.3)",
-              }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: "100%",
-                borderRadius: "8px 16px 16px 8px",
-                background:
-                  "linear-gradient(160deg, hsl(330 80% 70%) 0%, hsl(0 70% 60%) 40%, hsl(20 80% 55%) 100%)",
-                boxShadow: "4px 8px 30px hsl(330 80% 65% / 0.4)",
-                overflow: "hidden",
-              }}
-            >
-              <div style={{ position: "absolute", top: "33%", left: 0, right: 0, height: 3, background: "hsl(45 90% 88% / 0.5)", borderRadius: 2 }} />
-              <div style={{ position: "absolute", top: "66%", left: 0, right: 0, height: 3, background: "hsl(45 90% 88% / 0.5)", borderRadius: 2 }} />
-              <div
-                style={{
-                  position: "absolute",
-                  top: -6,
-                  left: -2,
-                  right: -2,
-                  height: 16,
-                  background: "linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(330 50% 95%) 100%)",
-                  borderRadius: "8px 8px 0 0",
-                  boxShadow: "0 2px 8px hsl(0 0% 0% / 0.15)",
-                }}
-              />
-              {[15, 35, 55, 75].map((left, i) => (
-                <div
-                  key={i}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: `${left}%`,
-                    width: 8,
-                    height: 18 + (i % 2) * 8,
-                    background: "hsl(330 80% 90%)",
-                    borderRadius: "0 0 8px 8px",
-                  }}
-                />
-              ))}
-              {[
-                { top: "25%", left: "25%", color: "hsl(45 90% 70%)", rot: -45 },
-                { top: "50%", left: "55%", color: "hsl(330 80% 70%)", rot: 30 },
-                { top: "72%", left: "35%", color: "hsl(280 70% 70%)", rot: -60 },
-              ].map((s, i) => (
-                <div
-                  key={i}
-                  style={{
-                    position: "absolute",
-                    top: s.top,
-                    left: s.left,
-                    width: 12,
-                    height: 4,
-                    background: s.color,
-                    borderRadius: 2,
-                    transform: `rotate(${s.rot}deg)`,
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Candles on top (only visible when not cut) */}
-        {!cut && (
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: "10%",
-              width: "80%",
-              display: "flex",
-              justifyContent: "space-around",
-              alignItems: "flex-end",
-              height: 80,
-              zIndex: 10,
-            }}
-          >
-            {candleColors.map((color, i) => (
+        {/* ── CANDLES (Lit until blown) ── */}
+        {step === "blow" && (
+          <div className="absolute top-[48px] left-[55px] right-[55px] h-[72px] flex justify-around items-end z-20">
+            {candlesLit.map((lit, i) => (
               <button
                 key={i}
-                onClick={handleBlowCandle}
-                className="focus:outline-none"
+                onClick={(e) => handleBlowCandle(i, e)}
+                className="relative flex flex-col items-center select-none focus:outline-none transition-transform hover:scale-110 active:scale-95"
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 0,
-                  background: "none",
-                  border: "none",
-                  cursor: candleBlown ? "default" : "pointer",
-                  padding: 0,
-                  height: 70 - i * 3,
+                  height: 60 - (i % 2) * 5,
+                  cursor: lit ? "pointer" : "default",
                 }}
               >
                 {/* Flame */}
-                {!candleBlown ? (
+                {lit && (
                   <div
+                    className="absolute -top-[18px] w-3 h-5 rounded-full animate-flame-flicker"
                     style={{
-                      width: 14,
-                      height: 22,
-                      background: `radial-gradient(ellipse at 50% 80%, hsl(45 100% 80%) 0%, hsl(30 100% 60%) 40%, hsl(15 100% 50%) 70%, transparent 100%)`,
-                      borderRadius: "50% 50% 40% 40% / 60% 60% 40% 40%",
-                      animation: "flame-flicker 0.8s ease-in-out infinite alternate",
-                      boxShadow: `0 0 12px hsl(45 100% 70%), 0 0 24px ${color}`,
-                      flexShrink: 0,
+                      background: "radial-gradient(ellipse at 50% 80%, #ffffff 0%, #ffeb3b 40%, #ff5722 80%, transparent 100%)",
+                      boxShadow: "0 0 10px #ffeb3b, 0 0 20px #ff5722",
                     }}
                   />
-                ) : (
-                  <div style={{ width: 14, height: 8, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "hsl(0 0% 30%)", opacity: 0.7 }} />
-                  </div>
                 )}
                 {/* Wick */}
-                <div style={{ width: 2, height: 6, background: "hsl(0 0% 20%)", borderRadius: 1 }} />
-                {/* Candle body */}
+                <div className="w-[1.5px] h-1.5 bg-neutral-800" />
+                {/* Body */}
                 <div
+                  className="w-2.5 rounded-t-sm"
                   style={{
-                    width: 10,
-                    height: 40 - i * 2,
-                    borderRadius: "4px 4px 2px 2px",
-                    background: `linear-gradient(180deg, ${color}, hsl(from ${color} h s calc(l - 15%)))`,
-                    boxShadow: candleBlown ? "none" : `0 0 8px ${color}88`,
-                    flexShrink: 0,
+                    height: 40 - (i % 2) * 5,
+                    background: i % 2 === 0
+                      ? "repeating-linear-gradient(45deg, #00bcd4, #00bcd4 3px, #e0f7fa 3px, #e0f7fa 6px)"
+                      : "repeating-linear-gradient(-45deg, #e91e63, #e91e63 3px, #fce4ec 3px, #fce4ec 6px)",
+                    boxShadow: lit ? "0 0 4px rgba(255,255,255,0.4)" : "none",
                   }}
                 />
               </button>
@@ -354,112 +390,70 @@ const Cake = ({ onCut }: CakeProps) => {
           </div>
         )}
 
-        {/* Cut action overlay */}
-        {candleBlown && !cut && (
-          <button
-            onClick={handleTapCake}
-            disabled={cutting}
-            className="absolute inset-0 focus:outline-none"
+        {/* ── SLICE OVERLAY KNIFE ── */}
+        {step === "cut" && (
+          <div
+            className={`absolute left-1/2 -translate-x-1/2 z-30 transition-all ${
+              sliceActive ? "animate-knife-cut" : "animate-bounce"
+            }`}
             style={{
-              background: cutting ? "hsl(330 80% 65% / 0.08)" : "transparent",
-              cursor: cutting ? "wait" : "pointer",
-              borderRadius: 16,
-              transition: "background 0.3s",
-              zIndex: 20,
+              top: sliceActive ? "20px" : "32px",
+              pointerEvents: "none",
             }}
-            aria-label="Cut the cake"
           >
-            {cutting && (
-              <div style={{
-                position: "absolute",
-                top: "40%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                fontSize: 36,
-                filter: "drop-shadow(0 0 16px hsl(330 80% 65%))",
-                animation: "knife-cut 0.8s ease-in-out forwards",
-              }}>
-                🔪
-              </div>
-            )}
-          </button>
+            <div
+              className="text-4xl filter drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]"
+              style={{
+                transform: "rotate(-45deg)",
+              }}
+            >
+              🔪
+            </div>
+          </div>
         )}
       </div>
 
-      {/* ── Make-a-wish Popup ── */}
-      {showPopup && (
-        <div
-          className="fixed inset-0 z-[200] flex items-center justify-center"
-          style={{ background: "hsl(0 0% 0% / 0.55)", backdropFilter: "blur(6px)" }}
-        >
-          <div
-            className="flex flex-col items-center gap-5 px-8 py-10 rounded-3xl text-center animate-fade-in-up"
-            style={{
-              background: "linear-gradient(135deg, hsl(330 50% 14% / 0.97), hsl(280 40% 10% / 0.97))",
-              border: "1px solid hsl(330 70% 55% / 0.3)",
-              boxShadow: "0 0 60px hsl(330 80% 60% / 0.2), 0 20px 60px hsl(0 0% 0% / 0.5)",
-              maxWidth: 340,
-              width: "90%",
-            }}
-          >
-            <p className="text-5xl" style={{ filter: "drop-shadow(0 0 14px hsl(45 100% 70%))" }}>🎂</p>
-            <h3
-              className="text-2xl sm:text-3xl font-display text-primary text-glow-pink leading-snug"
-              style={{ fontFamily: "var(--font-script, cursive)" }}
-            >
-              Make a Wish, Leela! 🌟
-            </h3>
-            <p className="text-sm text-foreground/60 font-light tracking-wide leading-relaxed">
-              Close your eyes, make a wish from your heart… then cut the cake! 💖
-            </p>
-            <div className="flex gap-3 mt-2">
-              <button
-                onClick={handleConfirmCut}
-                className="px-7 py-3 rounded-full text-sm uppercase tracking-[0.2em] font-medium transition-all duration-300 hover:scale-105 active:scale-95"
-                style={{
-                  background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(280 70% 55%))",
-                  color: "white",
-                  boxShadow: "0 4px 20px hsl(330 80% 65% / 0.5)",
-                  border: "1px solid hsl(330 80% 70% / 0.3)",
-                }}
-              >
-                Cut It! 🎂
-              </button>
-              <button
-                onClick={() => setShowPopup(false)}
-                className="px-5 py-3 rounded-full text-sm text-foreground/40 hover:text-foreground/70 transition-colors"
-                style={{ border: "1px solid hsl(280 30% 30% / 0.4)" }}
-              >
-                Wait…
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cut message + continue button */}
-      {showMessage && (
-        <div className="flex flex-col items-center gap-5 animate-fade-in-up">
-          <p
-            className="text-2xl sm:text-3xl font-display text-primary text-glow-pink text-center"
-            style={{ fontFamily: "var(--font-script, cursive)" }}
-          >
-            Make a wish, Leela! 🌟
-          </p>
+      {/* ── Control Action Cards ── */}
+      <div className="w-full flex flex-col items-center h-20 justify-center">
+        {step === "blow" && candlesLit.some((l) => !l) && (
           <button
-            onClick={onCut}
-            className="px-8 py-3 rounded-full text-sm uppercase tracking-[0.2em] font-medium transition-all duration-300 hover:scale-105 active:scale-95"
+            onClick={handleBlowAll}
+            className="text-xs uppercase tracking-[0.2em] text-foreground/40 hover:text-primary transition-colors py-1 px-4 border border-foreground/10 hover:border-primary/20 rounded-full"
+          >
+            Blow all out 🌬️
+          </button>
+        )}
+
+        {step === "wish" && (
+          <button
+            onClick={handleWishDone}
+            className="px-8 py-3.5 rounded-full text-sm uppercase tracking-[0.2em] font-medium transition-all duration-300 hover:scale-105 active:scale-95 animate-fade-in-up"
             style={{
               background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(280 70% 55%))",
               color: "white",
-              boxShadow: "0 4px 20px hsl(330 80% 65% / 0.5), 0 0 40px hsl(330 80% 65% / 0.2)",
+              boxShadow: "0 4px 20px hsl(330 80% 65% / 0.5), 0 0 40px hsl(280 60% 50% / 0.2)",
+              border: "1px solid hsl(330 80% 70% / 0.3)",
+            }}
+          >
+            I've made my wish 🤍
+          </button>
+        )}
+
+        {step === "done" && (
+          <button
+            onClick={onCut}
+            className="px-10 py-3.5 rounded-full text-sm uppercase tracking-[0.2em] font-medium transition-all duration-300 hover:scale-105 active:scale-95 animate-fade-in-up"
+            style={{
+              background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(280 70% 55%))",
+              color: "white",
+              boxShadow: "0 4px 20px hsl(330 80% 65% / 0.5), 0 0 40px hsl(280 60% 50% / 0.2)",
               border: "1px solid hsl(330 80% 70% / 0.3)",
             }}
           >
             Continue… ✨
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
