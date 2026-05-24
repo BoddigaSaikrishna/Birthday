@@ -831,6 +831,8 @@ const Index = () => {
                 "",
                 "Neku manchi experience ichaanani anukuntunnanu…",
                 "kani nee honest opinion chepthe chala happy avutanu ❤️",
+                "",
+                "Inkoti You are the First audience to this Creation...",
               ]}
               onComplete={handleTypingComplete}
               speed={42}
