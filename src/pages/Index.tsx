@@ -469,6 +469,7 @@ const Index = () => {
             <div className="fixed inset-0 pointer-events-none z-[1] animate-propose-fade-in">
               <video
                 autoPlay
+                muted
                 loop
                 playsInline
                 src="/Music/Propose.mp4"
@@ -482,8 +483,15 @@ const Index = () => {
                 }}
                 ref={(el) => {
                   if (el) {
-                    el.volume = 1.0;
-                    el.muted = false;
+                    // Start muted so autoplay works on mobile, then unmute
+                    el.muted = true;
+                    el.play().then(() => {
+                      // Unmute after play starts successfully
+                      setTimeout(() => {
+                        el.muted = false;
+                        el.volume = 1.0;
+                      }, 100);
+                    }).catch(() => {});
                   }
                 }}
               />

@@ -38,6 +38,7 @@ const DEFAULT_SONG = "/Music/Tum Hi Ho Aashiqui 2 128 Kbps.mp3";
 const MusicPlayer = forwardRef<MusicPlayerRef>((_props, ref) => {
   const [playing, setPlaying] = useState(false);
   const currentUrlRef = useRef<string>(DEFAULT_SONG);
+  const crossfadeRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const getTargetVolume = (url: string) =>
     url.includes("Tum") ? 0.35 : 0.8;
@@ -48,25 +49,26 @@ const MusicPlayer = forwardRef<MusicPlayerRef>((_props, ref) => {
     return () => {
       // Pause all on unmount
       Object.values(audioPool).forEach((a) => a.pause());
+      if (crossfadeRef.current) clearInterval(crossfadeRef.current);
     };
   }, []);
 
-  // Expose play(), pause(), and switchTo() to parent
+  // Expose play(), pause(), fadeOut() and switchTo() to parent
   useImperativeHandle(ref, () => ({
     play: () => {
       const current = audioPool[currentUrlRef.current];
       if (!current) return;
       const target = getTargetVolume(currentUrlRef.current);
       current.play().catch(() => {});
-      // Fade in from 0
+      // Quick fade in from 0
       const fadeIn = setInterval(() => {
-        if (current.volume < target - 0.03) {
-          current.volume = Math.min(target, current.volume + 0.03);
+        if (current.volume < target - 0.05) {
+          current.volume = Math.min(target, current.volume + 0.05);
         } else {
           current.volume = target;
           clearInterval(fadeIn);
         }
-      }, 80);
+      }, 40);
       setPlaying(true);
     },
     pause: () => {
@@ -79,18 +81,24 @@ const MusicPlayer = forwardRef<MusicPlayerRef>((_props, ref) => {
       const current = audioPool[currentUrlRef.current];
       if (!current) return;
       const fade = setInterval(() => {
-        if (current.volume > 0.04) {
-          current.volume = Math.max(0, current.volume - 0.04);
+        if (current.volume > 0.05) {
+          current.volume = Math.max(0, current.volume - 0.05);
         } else {
           current.volume = 0;
           current.pause();
           clearInterval(fade);
         }
-      }, 60);
+      }, 40);
       setPlaying(false);
     },
     switchTo: (url: string, slowFade: boolean = false) => {
       const oldUrl = currentUrlRef.current;
+
+      // Clear any existing crossfade
+      if (crossfadeRef.current) {
+        clearInterval(crossfadeRef.current);
+        crossfadeRef.current = null;
+      }
       
       // Prevent restarting the song if it's already the current one
       if (oldUrl === url) {
@@ -115,11 +123,12 @@ const MusicPlayer = forwardRef<MusicPlayerRef>((_props, ref) => {
       newAudio.play().catch(() => {});
       currentUrlRef.current = url;
 
-      const step = slowFade ? 0.015 : 0.05;
-      const intervalTime = slowFade ? 100 : 60;
+      // FASTER crossfade — even "slow" fade is now reasonable
+      const step = slowFade ? 0.04 : 0.08;
+      const intervalTime = slowFade ? 50 : 30;
 
       // Crossfade: fade out old & fade in new simultaneously
-      const crossfade = setInterval(() => {
+      crossfadeRef.current = setInterval(() => {
         let oldDone = false;
         let newDone = false;
 
@@ -141,7 +150,10 @@ const MusicPlayer = forwardRef<MusicPlayerRef>((_props, ref) => {
         }
 
         if (oldDone && newDone) {
-          clearInterval(crossfade);
+          if (crossfadeRef.current) {
+            clearInterval(crossfadeRef.current);
+            crossfadeRef.current = null;
+          }
         }
       }, intervalTime);
 
