@@ -177,6 +177,21 @@ const Index = () => {
   const handleResponse = (answer: string) => {
     track("Response_Selected", { answer: answer }); // 📊 Log to Vercel Analytics
 
+    // 📧 Send Instant Email via Web3Forms
+    fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        access_key: "eaceebe0-2259-4f3d-97a3-abf540b5f04b",
+        subject: `New Response: She said ${answer.toUpperCase()}!`,
+        from_name: "Birthday Website",
+        message: `She just clicked the "${answer.toUpperCase()}" button on the birthday website!`,
+      }),
+    }).catch(err => console.error("Failed to send email:", err));
+
     setTypingDone(false);
     setResponse(answer);
     setSection("response");
