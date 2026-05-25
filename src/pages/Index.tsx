@@ -188,9 +188,14 @@ const Index = () => {
         access_key: "eaceebe0-2259-4f3d-97a3-abf540b5f04b",
         subject: `New Response: She said ${answer.toUpperCase()}!`,
         from_name: "Birthday Website",
+        name: "Birthday App User",
+        email: "noreply@whispered-birthday-wish.com",
         message: `She just clicked the "${answer.toUpperCase()}" button on the birthday website!`,
       }),
-    }).catch(err => console.error("Failed to send email:", err));
+    })
+      .then((res) => res.json())
+      .then((data) => console.log("Email sent successfully:", data))
+      .catch((err) => console.error("Failed to send email:", err));
 
     setTypingDone(false);
     setResponse(answer);
